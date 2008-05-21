@@ -14,5 +14,3 @@ void simple_httpd_appcall(void);
 void simple_httpd_init(void);
 
 #endif /* __SIMPLE_HTTPD_H__ */
-/** @} */
-/** @} */

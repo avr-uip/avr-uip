@@ -1,3 +1,5 @@
+* New project structure with drivers, a generic port and libraries.
+
 * A new API: protosockets that are similar to BSD sockets but does not
   require any underlying multithreading system. 
 

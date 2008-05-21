@@ -8,7 +8,6 @@ The directory structure look as follows:
 
 apps/     - Example applications
 doc/      - Documentation
-lib/      - Library code used by some applications, TODO: Split libraries into subdirectories
+libs/     - Library code used by some applications and dirvers
 uip/      - uIP TCP/IP stack code
-arch/     - Port for specific architectures
 drivers/  - Drivers for various hardware

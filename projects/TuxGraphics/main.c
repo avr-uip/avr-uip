@@ -2,20 +2,31 @@
 #include <stdlib.h>
 #include <avr/io.h>
 
+#include "timer.h"
+
 #include "global-conf.h"
 #include "uip_arp.h"
 #include "network.h"
 #include "enc28j60.h"
 
-#include "timer.h"
-#include "clock-arch.h"
-
 #include <string.h>
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
+//Led on tuxgraphics board
+#define led_conf()		DDRB |= (1<<DDB1)
+#define led_low()		PORTB |= (1<<PB1)
+#define led_high()		PORTB &= ~(1<<PB1)
+#define led_blink()		PORTB ^= (1<<PB1)
+
 int main(void)
 {
+	led_conf();
+
 	network_init();
+
+	CLKPR = (1<<CLKPCE);	//Change prescaler
+	CLKPR = (1<<CLKPS0);	//Use prescaler 2
+	enc28j60Write(ECOCON, 1 & 0x7);	//Get a 25MHz signal from enc28j60
 
 	int i;
 	uip_ipaddr_t ipaddr;
@@ -65,6 +76,8 @@ int main(void)
 
 		}else if(timer_expired(&periodic_timer)) {
 			timer_reset(&periodic_timer);
+
+			led_blink();
 
 			for(i = 0; i < UIP_CONNS; i++) {
 				uip_periodic(i);

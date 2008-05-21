@@ -17,8 +17,14 @@ DEVS	= enc28j60 #The rest are determined by makefiles for apps
 #Project specific files
 $(NAME)_SOURCES = main.c clock-arch.c
 
+#Low fuse
+LFUSE	= 0x60	
+
+#High fuse
+HFUSE	= 0xDF
+
 #Include global configurations
--include ../MakeConf.include
+-include ../../MakeConf.include
 
 #Include the genetic makefile
--include ../Makefile.include
+-include ../../Makefile.include
