@@ -12,11 +12,20 @@
 #include <string.h>
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
+#ifdef PORTB1
 //Led on tuxgraphics board
-#define led_conf()		DDRB |= (1<<DDB1)
-#define led_low()		PORTB |= (1<<PB1)
-#define led_high()		PORTB &= ~(1<<PB1)
-#define led_blink()		PORTB ^= (1<<PB1)
+#define led_conf()      DDRB |= (1<<DDB1)
+#define led_low()       PORTB |= (1<<PORTB1)
+#define led_high()      PORTB &= ~(1<<PORTB1)
+#define led_blink()     PORTB ^= (1<<PORTB1)
+#else
+//Led on tuxgraphics board
+#define led_conf()      DDRB |= (1<<DDB1)
+#define led_low()       PORTB |= (1<<PB1)
+#define led_high()      PORTB &= ~(1<<PB1)
+#define led_blink()     PORTB ^= (1<<PB1)
+#endif
+
 
 int main(void)
 {
@@ -42,17 +51,25 @@ int main(void)
 	struct uip_eth_addr mac = {UIP_ETHADDR0, UIP_ETHADDR1, UIP_ETHADDR2, UIP_ETHADDR3, UIP_ETHADDR4, UIP_ETHADDR5};
 
 	uip_setethaddr(mac);
-	simple_httpd_init();
+    httpd_init();
 
 #ifdef __DHCPC_H__
 	dhcpc_init(&mac, 6);
 #else
-	uip_ipaddr(ipaddr, 192,167,0,255);
+    uip_ipaddr(ipaddr, 192,168,2,55);
+    uip_sethostaddr(ipaddr);
+    uip_ipaddr(ipaddr, 192,168,2,1);
+    uip_setdraddr(ipaddr);
+    uip_ipaddr(ipaddr, 255,255,255,0);
+    uip_setnetmask(ipaddr);
+
+/*	uip_ipaddr(ipaddr, 192,167,0,255);
 	uip_sethostaddr(ipaddr);
 	uip_ipaddr(ipaddr, 192,167,0,254);
 	uip_setdraddr(ipaddr);
 	uip_ipaddr(ipaddr, 255,255,0,0);
 	uip_setnetmask(ipaddr);
+*/
 #endif /*__DHCPC_H__*/
 
 

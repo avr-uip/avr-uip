@@ -21,6 +21,8 @@ foreach $file (@files) {
     }
 }
 
+print(OUTPUT "#include <avr/pgmspace.h>\n");
+
 foreach $file (@files) {
     if(-f $file) {
 	
@@ -32,8 +34,8 @@ foreach $file (@files) {
 	$fvar = $file;
 	$fvar =~ s-/-_-g;
 	$fvar =~ s-\.-_-g;
-	# for AVR, add PROGMEM here
-	print(OUTPUT "static const unsigned char data".$fvar."[] = {\n");
+	# for AVR, add PROGMEM here, remove "unsigned" to fix compiler warning
+	print(OUTPUT "static const char data".$fvar."[] PROGMEM = {\n");
 	print(OUTPUT "\t/* $file */\n\t");
 	for($j = 0; $j < length($file); $j++) {
 	    printf(OUTPUT "%#02x, ", unpack("C", substr($file, $j, 1)));

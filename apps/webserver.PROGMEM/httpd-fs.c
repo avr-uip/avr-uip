@@ -37,6 +37,9 @@
 #include "httpd-fs.h"
 #include "httpd-fsdata.h"
 
+#include <avr/pgmspace.h>
+
+
 #ifndef NULL
 #define NULL 0
 #endif /* NULL */
@@ -51,23 +54,8 @@ static u16_t count[HTTPD_FS_NUMFILES];
 static u8_t
 httpd_fs_strcmp(const char *str1, const char *str2)
 {
-  u8_t i;
-  i = 0;
- loop:
-
-  if(str2[i] == 0 ||
-     str1[i] == '\r' ||
-     str1[i] == '\n') {
-    return 0;
-  }
-
-  if(str1[i] != str2[i]) {
-    return 1;
-  }
-
-
-  ++i;
-  goto loop;
+    // just use the exising lib functions
+    return (strncmp_P(str1, str2, strlen_P(str2) ));
 }
 /*-----------------------------------------------------------------------------------*/
 int

@@ -25,6 +25,7 @@
 
 #include "enc28j60.h"
 
+/*#ifndef SPDR
 #ifdef SPDR0
 	#define SPDR	SPDR0
 	#define SPCR	SPCR0
@@ -39,7 +40,8 @@
 	#define SPI2X	SPI2X0
 	#define SPE		SPE0
 #endif
-
+#endif
+*/
 // include configuration
 #include "enc28j60conf.h"
 

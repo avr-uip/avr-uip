@@ -35,12 +35,13 @@
 #ifndef __HTTPD_FSDATA_H__
 #define __HTTPD_FSDATA_H__
 
+#include <avr/pgmspace.h>
 #include "uip.h"
 
 struct httpd_fsdata_file {
   const struct httpd_fsdata_file *next;
-  const char *name;
-  const char *data;
+  const PGM_P name;
+  const PGM_P data;
   const int len;
 #ifdef HTTPD_FS_STATISTICS
 #if HTTPD_FS_STATISTICS == 1
@@ -51,6 +52,8 @@ struct httpd_fsdata_file {
 
 struct httpd_fsdata_file_noconst {
   struct httpd_fsdata_file *next;
+  //char *name;
+  //char *data;
   char *name;
   char *data;
   int len;

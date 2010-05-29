@@ -35,6 +35,7 @@
 #ifndef __HTTPD_H__
 #define __HTTPD_H__
 
+#include <avr/pgmspace.h>
 #include "psock.h"
 #include "httpd-fs.h"
 
@@ -47,7 +48,7 @@ struct httpd_state {
   char state;
   struct httpd_fs_file file;
   int len;
-  char *scriptptr;
+  PGM_P scriptptr;
   int scriptlen;
   
   unsigned short count;

@@ -1,12 +1,17 @@
 #Chip choice
-MCU		= atmega168
-CHIP	= m168
+#MCU		= atmega168
+#CHIP	= m168
+#### larger chip needed for webserver.PROGMEM
+MCU	= atmega328p
+CHIP	= m328p
 
 #Project name
 NAME    = test
 
 #Compiled apps
-APPS	= simple-httpd
+#APPS	= simple-httpd
+#### webserver.PROGMEM needs 19k of RAM for the default setup
+APPS	= webserver.PROGMEM  
 
 #Compiled drivers
 DEVS	= enc28j60 #The rest are determined by makefiles for apps
