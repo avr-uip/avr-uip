@@ -12,6 +12,7 @@
 #include <string.h>
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
+
 #ifdef PORTB1
 //Led on tuxgraphics board
 #define led_conf()      DDRB |= (1<<DDB1)
