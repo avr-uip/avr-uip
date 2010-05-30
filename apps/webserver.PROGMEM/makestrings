@@ -10,6 +10,7 @@ sub stringify {
   open(FILE, "$name");
   
   while(<FILE>) {
+      next if(/^#/);
     if(/(.+) "(.+)"/) {
       $var = $1;
       $data = $2;

@@ -1,3 +1,6 @@
+
+##CFLAGS += -save-temps
+
 #Include makefiles, directories and CFLAGS for application
 ifdef APPS
   APPDIRS = $(foreach APP, $(APPS), ${APPSDIR}/$(APP))
