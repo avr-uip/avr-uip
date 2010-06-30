@@ -52,6 +52,7 @@
 
 #include "psock.h"
 #include "httpd.h"
+#include "httpd-cgi-conf.h"
 
 typedef PT_THREAD((* httpd_cgifunction)(struct httpd_state *, char *));
 

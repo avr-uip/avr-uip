@@ -54,13 +54,32 @@
 #include <stdio.h>
 #include <string.h>
 
+#if defined ENABLE_CGI_FILE-STATS
 HTTPD_CGI_CALL(file, "file-stats", file_stats);
+#endif
+
 //HTTPD_CGI_CALL(tcp, "tcp-connections", tcp_stats);
+
+#if defined ENABLE_CGI_NET-STATS
 HTTPD_CGI_CALL(net, "net-stats", net_stats);
+#endif
+
+#if defined ENABLE_CGI_MYCGI
 HTTPD_CGI_CALL(mycgi, "mycgi", mycgi_out);
+#endif
 
 //static const struct httpd_cgi_call *calls[] = { &file, &tcp, &net, NULL };
-static const struct httpd_cgi_call *calls[] = { &file, &net, &mycgi, NULL };
+static const struct httpd_cgi_call *calls[] = { 
+#if defined ENABLE_CGI_FILE-STATS
+    &file,
+#endif    
+#if defined ENABLE_CGI_NET-STATS
+    &net,
+#endif    
+#if defined ENABLE_CGI_MYCGI
+    &mycgi,
+#endif    
+    NULL };
 
 /*---------------------------------------------------------------------------*/
 static
@@ -84,6 +103,7 @@ httpd_cgi(char *name)
   return nullfunction;
 }
 /*---------------------------------------------------------------------------*/
+#if defined ENABLE_CGI_FILE-STATS
 static unsigned short
 generate_file_stats(void *arg)
 {
@@ -100,7 +120,9 @@ PT_THREAD(file_stats(struct httpd_state *s, char *ptr))
   
   PSOCK_END(&s->sout);
 }
+#endif  /* ENABLE_CGI_FILE-STATS */
 /*---------------------------------------------------------------------------*/
+#if defined ENABLE_CGI_MYCGI
 static
 PT_THREAD(mycgi_out(struct httpd_state *s, char *ptr))
 {
@@ -110,6 +132,7 @@ PT_THREAD(mycgi_out(struct httpd_state *s, char *ptr))
   
   PSOCK_END(&s->sout);
 }
+#endif  /* ENABLE_CGI_MYCGI */
 /*---------------------------------------------------------------------------*/
 // COMMENT OUT THE FOLLOWING TO SAVE RAM FROM VARS WE DON"T USE
 //static const char closed[] =   /*  "CLOSED",*/
@@ -188,6 +211,7 @@ PT_THREAD(mycgi_out(struct httpd_state *s, char *ptr))
 //  PSOCK_END(&s->sout);
 //}
 ///*---------------------------------------------------------------------------*/
+#if defined ENABLE_CGI_NET-STATS
 static unsigned short
 generate_net_stats(void *arg)
 {
@@ -212,5 +236,6 @@ PT_THREAD(net_stats(struct httpd_state *s, char *ptr))
   
   PSOCK_END(&s->sout);
 }
+#endif  /* ENABLE_CGI_NET-STATS */ 
 /*---------------------------------------------------------------------------*/
 /** @} */

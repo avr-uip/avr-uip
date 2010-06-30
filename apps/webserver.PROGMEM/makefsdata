@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
 $httpd_fs_dir = "httpd-fs";
+%cgi_names;   # a list of cgi function names
 
 open(OUTPUT, "> httpd-fsdata.c");
 
@@ -10,6 +11,7 @@ if ($#ARGV > -1)
     $httpd_fs_dir = $ARGV[$#ARGV];
 }
 
+chomp($starting_dir=`pwd`);
 chdir($httpd_fs_dir);
 
 opendir(DIR, ".");
@@ -33,6 +35,7 @@ print(OUTPUT "#include <avr/pgmspace.h>\n");
 
 foreach $file (@files) {
     if(-f $file) {
+    $file_name = "$file";
 	
 	print "Adding file $file\n";
 	
@@ -68,6 +71,17 @@ foreach $file (@files) {
 	push(@fvars, $fvar);
 	push(@pfiles, $file);
     }
+	# open the file and search for cgi functions
+    open(FILE, $file_name) || die "Could not open file $file\n";
+    while(<FILE>)
+    {
+        if( $_ =~ m/%!\s+(\S+)/ )
+        {  # save found cgi function names
+            $cgi_names{$1}=1;
+        }
+    }
+    close(FILE);
+
 }
 
 for($i = 0; $i < @fvars; $i++) {
@@ -86,3 +100,14 @@ for($i = 0; $i < @fvars; $i++) {
 
 print(OUTPUT "#define HTTPD_FS_ROOT file$fvars[$i - 1]\n\n");
 print(OUTPUT "#define HTTPD_FS_NUMFILES $i\n");
+close(OUTPUT);
+
+# change back to the starting dir and generate the httpd-cgi-conf.h file
+chdir($starting_dir);
+open(OUTPUT, "> httpd-cgi-conf.h") || die "Could not open file httpd-cgi-conf.h\n";
+foreach $akey (keys %cgi_names)
+{
+    $akey = uc $akey;
+    print(OUTPUT "#define ENABLE_CGI_$akey \n");
+}
+close(OUTPUT);
