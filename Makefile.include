@@ -85,7 +85,7 @@ ALL_SOURCES = $(APP_SOURCES) $(UIP_SOURCES) $(DEV_SOURCES) $($(NAME)_SOURCES) $(
 
 #Rule for building the output files
 $(NAME).out: dev_OBJECTS app_OBJECTS lib_OBJECTS $(NAME)_OBJECTS uip_OBJECTS
-	$(CC) $(CFLAGS) -o $(OBJECTDIR)/$(NAME).out -Wl ${addprefix $(OBJECTDIR)/, $(ALL_SOURCES:.c=.o)}
+	$(CC) $(CFLAGS) -o $(OBJECTDIR)/$(NAME).out -Wl $(sort ${addprefix $(OBJECTDIR)/, $(ALL_SOURCES:.c=.o)})
 
 #Rule for building hex file
 $(NAME).hex: $(NAME).out

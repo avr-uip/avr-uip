@@ -1,8 +1,16 @@
 #!/usr/bin/perl
 
+$httpd_fs_dir = "httpd-fs";
+
 open(OUTPUT, "> httpd-fsdata.c");
 
-chdir("httpd-fs");
+# last arg is the dir name
+if ($#ARGV > -1)
+{
+    $httpd_fs_dir = $ARGV[$#ARGV];
+}
+
+chdir($httpd_fs_dir);
 
 opendir(DIR, ".");
 @files =  grep { !/^\./ && !/(CVS|~)/ } readdir(DIR);
