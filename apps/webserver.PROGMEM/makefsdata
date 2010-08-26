@@ -108,6 +108,14 @@ open(OUTPUT, "> httpd-cgi-conf.h") || die "Could not open file httpd-cgi-conf.h\
 foreach $akey (keys %cgi_names)
 {
     $akey = uc $akey;
+    if( $akey =~ m/-/ )
+    {
+        $akey_save = $akey;
+        $akey =~ s/-/_/g;
+        print "\nWARNING!!!!  cgi name $akey contains a dash '-'.  Converting to an underscore in order to generate a valid define for use in code ifdef";
+        print "\n\t $akey_save converted to $akey";
+        print "\n";
+    }
     print(OUTPUT "#define ENABLE_CGI_$akey \n");
 }
 close(OUTPUT);
