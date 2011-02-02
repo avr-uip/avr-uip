@@ -2,8 +2,8 @@
 #MCU		= atmega168
 #CHIP	= m168
 #### larger chip needed for webserver.PROGMEM
-MCU	= atmega328p
-CHIP	= m328p
+MCU	= atmega644
+CHIP	= m644
 
 #Project name
 NAME    = test

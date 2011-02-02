@@ -37,6 +37,7 @@
 #define ENC28J60CONF_H
 
 
+/*
 ////#ifdef PORTB1
 // ENC28J60 SPI port
 #define ENC28J60_SPI_PORT		PORTB
@@ -50,6 +51,7 @@
 #define ENC28J60_CONTROL_DDR	DDRB
 #define ENC28J60_CONTROL_CS		PORTB2
 ////#else
+*/
 /*
 // ENC28J60 SPI port
 #define ENC28J60_SPI_PORT		PORTB

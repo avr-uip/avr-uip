@@ -23,19 +23,15 @@
 #define ENC28J60_SPI_PORT		PORTB
 #define ENC28J60_SPI_DDR		DDRB
 
-// pre ATMega328p 
-#ifdef PB5
-#define ENC28J60_SPI_SCK		PB5
-#define ENC28J60_SPI_MOSI		PB3
-#define ENC28J60_SPI_MISO		PB4
-#define ENC28J60_SPI_SS			PB2
-#define ENC28J60_CONTROL_CS		PB2
+
+#if defined(__AVR_ATmega644__)||defined(__AVR_ATmega644P__)
+  #define ENC28J60_SPI_SCK        PORTB7
+  #define ENC28J60_SPI_MOSI       PORTB5
+  #define ENC28J60_SPI_MISO       PORTB6
+  #define ENC28J60_SPI_SS         PORTB4
+  #define ENC28J60_CONTROL_CS      PORTB4
 #else
-#define ENC28J60_SPI_SCK        PORTB5
-#define ENC28J60_SPI_MOSI       PORTB3
-#define ENC28J60_SPI_MISO       PORTB4
-#define ENC28J60_SPI_SS         PORTB2
-#define ENC28J60_CONTROL_CS      PORTB2
+  #error "NIC SPI PORT PINS NOT DEFINED"
 #endif
 
 // ENC28J60 control port
