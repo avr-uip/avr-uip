@@ -3,7 +3,7 @@
 #CHIP	= m168
 #### larger chip needed for webserver.PROGMEM
 MCU	= atmega644
-CHIP	= m644
+CHIP	= m644p
 
 #Project name
 NAME    = test
