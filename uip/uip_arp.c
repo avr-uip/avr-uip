@@ -230,9 +230,8 @@ uip_arp_update(u16_t *ipaddr, struct uip_eth_addr *ethaddr)
  * variable uip_len.
  */
 /*-----------------------------------------------------------------------------------*/
-#if 0
-void
-uip_arp_ipin(void)
+//#if 0
+void uip_arp_ipin(void)
 {
   uip_len -= sizeof(struct uip_eth_hdr);
 	
@@ -250,7 +249,7 @@ uip_arp_ipin(void)
   
   return;
 }
-#endif /* 0 */
+//#endif /* 0 */
 /*-----------------------------------------------------------------------------------*/
 /**
  * ARP processing for incoming ARP packets.
@@ -274,6 +273,7 @@ uip_arp_ipin(void)
  * global variable uip_len.
  */
 /*-----------------------------------------------------------------------------------*/
+//#if 0
 void
 uip_arp_arpin(void)
 {
@@ -322,6 +322,7 @@ uip_arp_arpin(void)
 
   return;
 }
+//#endif
 /*-----------------------------------------------------------------------------------*/
 /**
  * Prepend Ethernet header to an outbound IP packet and see if we need
