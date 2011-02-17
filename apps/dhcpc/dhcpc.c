@@ -1,3 +1,4 @@
+// NOTE: fixed bug as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
 /*
  * Copyright (c) 2005, Swedish Institute of Computer Science
  * All rights reserved.
@@ -38,6 +39,7 @@
 #include "dhcpc.h"
 #include "timer.h"
 #include "pt.h"
+
 
 #define STATE_INITIAL         0
 #define STATE_SENDING         1
@@ -230,11 +232,10 @@ parse_options(u8_t *optptr, int len)
   return type;
 }
 /*---------------------------------------------------------------------------*/
-static u8_t
-parse_msg(void)
+static u8_t parse_msg(void)
 {
   struct dhcp_msg *m = (struct dhcp_msg *)uip_appdata;
-  
+
   if(m->op == DHCP_REPLY &&
      memcmp(m->xid, xid, sizeof(xid)) == 0 &&
      memcmp(m->chaddr, s.mac_addr, s.mac_len) == 0) {
@@ -251,56 +252,72 @@ PT_THREAD(handle_dhcp(void))
   
   /* try_again:*/
   s.state = STATE_SENDING;
-  s.ticks = CLOCK_SECOND;
+  s.ticks = CLOCK_SECOND * 3;
 
   do {
     send_discover();
     timer_set(&s.timer, s.ticks);
-    PT_WAIT_UNTIL(&s.pt, uip_newdata() || timer_expired(&s.timer));
+		// NOTE: fixed as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
+    PT_YIELD_UNTIL(&s.pt, uip_newdata() || timer_expired(&s.timer));
 
-    if(uip_newdata() && parse_msg() == DHCPOFFER) {
-      s.state = STATE_OFFER_RECEIVED;
-      break;
+
+    if(uip_newdata())
+    {
+        if (parse_msg() == DHCPOFFER)
+        {
+            s.state = STATE_OFFER_RECEIVED;
+            //break;
+        }
+    }
+    else
+    {
+        if(s.ticks < CLOCK_SECOND * 60) {
+            s.ticks *= 2;
+        }
     }
 
-    if(s.ticks < CLOCK_SECOND * 60) {
-      s.ticks *= 2;
-    }
   } while(s.state != STATE_OFFER_RECEIVED);
   
-  s.ticks = CLOCK_SECOND;
+  s.ticks = CLOCK_SECOND * 3;
 
   do {
     send_request();
     timer_set(&s.timer, s.ticks);
-    PT_WAIT_UNTIL(&s.pt, uip_newdata() || timer_expired(&s.timer));
+		// NOTE: fixed as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
+    PT_YIELD_UNTIL(&s.pt, uip_newdata() || timer_expired(&s.timer));
 
-    if(uip_newdata() && parse_msg() == DHCPACK) {
-      s.state = STATE_CONFIG_RECEIVED;
-      break;
+    if(uip_newdata())
+    {
+        if (parse_msg() == DHCPACK)
+        {
+            s.state = STATE_CONFIG_RECEIVED;
+            //break;
+        }
     }
-
-    if(s.ticks <= CLOCK_SECOND * 10) {
-      s.ticks += CLOCK_SECOND;
-    } else {
-      PT_RESTART(&s.pt);
+    else
+    {
+        if(s.ticks <= CLOCK_SECOND * 10) {
+          s.ticks += CLOCK_SECOND;
+        } else {
+          PT_RESTART(&s.pt);
+        }
     }
   } while(s.state != STATE_CONFIG_RECEIVED);
   
-#if 0
-  printf("Got IP address %d.%d.%d.%d\n",
+#if DEBUG_SERIAL
+  printf_P(PSTR("Got IP address %d.%d.%d.%d\r\n"),
 	 uip_ipaddr1(s.ipaddr), uip_ipaddr2(s.ipaddr),
 	 uip_ipaddr3(s.ipaddr), uip_ipaddr4(s.ipaddr));
-  printf("Got netmask %d.%d.%d.%d\n",
+  printf_P(PSTR("Got netmask %d.%d.%d.%d\r\n"),
 	 uip_ipaddr1(s.netmask), uip_ipaddr2(s.netmask),
 	 uip_ipaddr3(s.netmask), uip_ipaddr4(s.netmask));
-  printf("Got DNS server %d.%d.%d.%d\n",
+  printf_P(PSTR("Got DNS server %d.%d.%d.%d\r\n"),
 	 uip_ipaddr1(s.dnsaddr), uip_ipaddr2(s.dnsaddr),
 	 uip_ipaddr3(s.dnsaddr), uip_ipaddr4(s.dnsaddr));
-  printf("Got default router %d.%d.%d.%d\n",
+  printf_P(PSTR("Got default router %d.%d.%d.%d\r\n"),
 	 uip_ipaddr1(s.default_router), uip_ipaddr2(s.default_router),
 	 uip_ipaddr3(s.default_router), uip_ipaddr4(s.default_router));
-  printf("Lease expires in %ld seconds\n",
+  printf_P(PSTR("Lease expires in %ld seconds\r\n"),
 	 ntohs(s.lease_time[0])*65536ul + ntohs(s.lease_time[1]));
 #endif
 
@@ -312,10 +329,10 @@ PT_THREAD(handle_dhcp(void))
    * PT_END restarts the thread so we do this instead. Eventually we
    * should reacquire expired leases here.
    */
-  while(1) {
+/*  while(1) {
     PT_YIELD(&s.pt);
   }
-
+*/
   PT_END(&s.pt);
 }
 /*---------------------------------------------------------------------------*/
@@ -339,7 +356,10 @@ dhcpc_init(const void *mac_addr, int mac_len)
 void
 dhcpc_appcall(void)
 {
-  handle_dhcp();
+    led_blink();
+    // only when we ask for a new ip
+    if (s.state != STATE_CONFIG_RECEIVED)
+        handle_dhcp();
 }
 /*---------------------------------------------------------------------------*/
 void
@@ -350,7 +370,16 @@ dhcpc_request(void)
   if(s.state == STATE_INITIAL) {
     uip_ipaddr(ipaddr, 0,0,0,0);
     uip_sethostaddr(ipaddr);
-    /*    handle_dhcp(PROCESS_EVENT_NONE, NULL);*/
+    //handle_dhcp();
   }
 }
 /*---------------------------------------------------------------------------*/
+
+void
+dhcpc_renew(void)
+{
+    u16_t ipaddr[2];
+    uip_ipaddr(ipaddr, 0,0,0,0);
+    uip_sethostaddr(ipaddr);
+    handle_dhcp();
+}

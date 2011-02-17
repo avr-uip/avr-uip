@@ -56,6 +56,7 @@ struct dhcpc_state {
 
 void dhcpc_init(const void *mac_addr, int mac_len);
 void dhcpc_request(void);
+void dhcpc_renew(void);
 
 void dhcpc_appcall(void);
 
