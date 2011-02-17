@@ -7,8 +7,18 @@
 //#include "hello-world.h"
 //#include "simple-httpd.h"
 //#include "telnetd.h"
+
+/////////////////////////
+// webserver options
+// - uncomment to turn on POST support in the web server
+//#define HTTP_POST_SUPPORT
+// - the max amount of data which may be posted (bytes)
+#define MAX_POST_DATA 80
 #include "webserver.h"
-// #include "dhcpc.h"
+/////////////////////////
+
+#include "dhcpc.h"
+
 //#include "resolv.h"
 //#include "webclient.h"
 

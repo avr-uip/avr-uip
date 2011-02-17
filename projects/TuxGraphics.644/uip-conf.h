@@ -39,21 +39,24 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_MAX_CONNECTIONS 1
+#define UIP_CONF_MAX_CONNECTIONS 2
 
 /**
  * Maximum number of listening TCP ports.
  *
  * \hideinitializer
  */
-#define UIP_CONF_MAX_LISTENPORTS 1
+#define UIP_CONF_MAX_LISTENPORTS 2
 
 /**
  * uIP buffer size.
  *
  * \hideinitializer
+ *
+ * DHCP with my Netgear router needs 590 bytes for the UDP packet
+ * rounding up to 600 isn't bad.
  */
-#define UIP_CONF_BUFFER_SIZE     300
+#define UIP_CONF_BUFFER_SIZE     600
 /**
  * CPU byte order.
  *
@@ -73,14 +76,14 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_UDP             0
+#define UIP_CONF_UDP             1
 
 /**
  * UDP checksums on or off
  *
  * \hideinitializer
  */
-#define UIP_CONF_UDP_CHECKSUMS   0
+#define UIP_CONF_UDP_CHECKSUMS   1
 
 /**
  * uIP statistics on or off
@@ -94,7 +97,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_BROADCAST		0
+#define UIP_CONF_BROADCAST		1
 
 /**
  * The maximum amount of concurrent UDP connections.
