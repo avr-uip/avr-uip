@@ -8,8 +8,10 @@
 //#include "simple-httpd.h"
 //#include "telnetd.h"
 #include "webserver.h"
-// #include "dhcpc.h"
+//#include "dhcpc.h"
 //#include "resolv.h"
 //#include "webclient.h"
+
+//#define HTTP_POST_SUPPORT
 
 #endif /*__APPS_CONF_H__*/

@@ -156,7 +156,7 @@ void dhcpc_configured(const struct dhcpc_state *s)
 	uip_setnetmask(s->netmask);
 	uip_setdraddr(s->default_router);
 	//resolv_conf(s->dnsaddr);
-	red_high();
+	//red_high();
 }
 #endif /* __DHCPC_H__ */
 /*void

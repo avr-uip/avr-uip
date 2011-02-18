@@ -69,7 +69,7 @@ typedef unsigned short uip_stats_t;
 #define UIP_CONF_LOGGING         0
 
 /**
- * UDP support on or off
+ * UDP support on or off requires DHCP if ON
  *
  * \hideinitializer
  */
@@ -90,7 +90,7 @@ typedef unsigned short uip_stats_t;
 #define UIP_CONF_STATISTICS      0
 
 /**
- * Broadcast support.
+ * Broadcast support. Needed for dhcp
  *
  * \hideinitializer
  */
@@ -101,7 +101,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_UDP_CONNS		1
+#define UIP_CONF_UDP_CONNS		0
 
 //Include app configuration
 #include "apps-conf.h"
