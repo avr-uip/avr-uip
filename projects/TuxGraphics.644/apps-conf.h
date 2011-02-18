@@ -17,6 +17,7 @@
 #include "webserver.h"
 /////////////////////////
 
+//#define DHCP_DEBUG 1
 #include "dhcpc.h"
 
 //#include "resolv.h"

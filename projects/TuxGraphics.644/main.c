@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <avr/io.h>
 #include <avr/eeprom.h>
+#include <avr/wdt.h>
 
 #include "timer.h"
 
@@ -43,6 +44,11 @@ struct timer dhcp_timer;
 
 int main(void)
 {
+    /* Disable watchdog if enabled by bootloader/fuses */
+    MCUSR &= ~(1 << WDRF);
+    wdt_disable();
+// Note: make the following call in code to reset device
+// wdt_enable(WDTO_500MS); // reset in 2 seconds - requires #include <avr/wdt.h>
 	led_conf();
 
 	network_init();
@@ -59,9 +65,10 @@ int main(void)
 
 	timer_set(&periodic_timer, CLOCK_SECOND / 2);
 	timer_set(&arp_timer, CLOCK_SECOND * 10);
-    timer_set(&dhcp_timer, CLOCK_SECOND * 600);
-led_low();
 
+#ifdef DHCP_DEBUG
+    led_low();
+#endif
 	uip_init();
     // must be done or sometimes arp doesn't work
     uip_arp_init();
@@ -72,9 +79,6 @@ led_low();
         _enable_dhcp = 1;
         eeprom_write_byte(&ee_enable_dhcp,_enable_dhcp);
     }
-    eeprom_read_block ((void *)_ip_addr, (const void *)&ee_ip_addr,4);
-    eeprom_read_block ((void *)_net_mask,(const void *)&ee_net_mask,4);
-    eeprom_read_block ((void *)_gateway, (const void *)&ee_gateway,4);
     eeprom_read_block ((void *)_eth_addr, (const void *)&ee_eth_addr,6);
 
     // if the mac address in eeprom looks good, use it.
@@ -92,11 +96,17 @@ led_low();
 
     if (_enable_dhcp)
     {
+        // setup the dhcp renew timer the make the first request
+        timer_set(&dhcp_timer, CLOCK_SECOND * 600);
 	    dhcpc_init(&my_eth_addr, 6);
         dhcpc_request();
     }
     else
     {
+        eeprom_read_block ((void *)_ip_addr, (const void *)&ee_ip_addr,4);
+        eeprom_read_block ((void *)_net_mask,(const void *)&ee_net_mask,4);
+        eeprom_read_block ((void *)_gateway, (const void *)&ee_gateway,4);
+
         // if the IP looks good in flash, use it
         if ((_ip_addr[0] != 255) && (_ip_addr[0] != 0))
         {
@@ -118,6 +128,7 @@ led_low();
         }
     }
 
+    // start up the webserver
     httpd_init();
 
 
@@ -176,11 +187,12 @@ led_low();
 	return 0;
 }
 
+#if UIP_CONF_LOGGING == 1
 void uip_log(char *m)
 {
 	//TODO: Get debug information out here somehow, does anybody know a smart way to do that?
 }
-
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -205,10 +217,11 @@ void dhcpc_configured(const struct dhcpc_state *s)
     _gateway[2] = (s->default_router[1]);
     _gateway[3] = (s->default_router[1]) >> 8;
 
+#ifdef DHCP_DEBUG
     eeprom_write_block (_ip_addr, &ee_ip_addr, 4);
     eeprom_write_block (_net_mask,&ee_net_mask,4);
     eeprom_write_block (_gateway, &ee_gateway, 4);
-
+#endif
     // re-init just in case
 	uip_setethaddr(my_eth_addr);
 
@@ -224,19 +237,14 @@ void dhcpc_configured(const struct dhcpc_state *s)
     uip_ipaddr(&addr,_gateway[0], _gateway[1], _gateway[2], _gateway[3]);
     uip_setdraddr(&addr);
 
-/*
-  This chunk of code is causing problems.  The retry code here is causing some major error... 
-  revisit later... for now just run dhcp every 5 min if we are in dhcp mode.
-    // odd that the s->lease_time has to be converted as a u16_t should be the same as a uint16_t
-//    uint32_t lease_ticks_want = CLOCK_SECOND * (uint16_t) (s->lease_time);
-//    uint16_t lease_ticks = ((lease_ticks_want > 65534) ? 65534 : lease_ticks_want);
-    //se_ticks_wantlease_ticks = ((CLOCK_SECOND * s->lease_time) > lease_ticks ? lease_ticks : (CLOCK_SECOND * s->lease_time));
-//    timer_set(&dhcp_timer, lease_ticks);
-*/
+//  code to use dhcp server lease time removed due to uint16_t overflow
+//  issues with calculating the time.  Just use 5 minutes instead.  
     timer_set(&dhcp_timer, 5 * 60 * CLOCK_SECOND);
 
+#ifdef DHCP_DEBUG
     // for now turn on the led when we get an ip
     led_high();
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
