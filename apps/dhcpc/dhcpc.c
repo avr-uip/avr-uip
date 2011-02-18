@@ -356,9 +356,9 @@ dhcpc_init(const void *mac_addr, int mac_len)
 void
 dhcpc_appcall(void)
 {
-    led_blink();
-    // only when we ask for a new ip
-    if (s.state != STATE_CONFIG_RECEIVED)
+    // only when we ask for a new ip if we have a udp conn setup
+    // since the dhcpc_appcall will be called as part of the normal uip app loop
+    if ((s.conn != NULL) && (s.state != STATE_CONFIG_RECEIVED))
         handle_dhcp();
 }
 /*---------------------------------------------------------------------------*/
