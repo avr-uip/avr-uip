@@ -56,6 +56,7 @@ all: $(NAME).hex
 
 #Define a genetic rule for building an object file
 $(OBJECTDIR)/%.o: %.c
+	mkdir -p $(basename $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 #Define a genetic rule for building a dependency file 
