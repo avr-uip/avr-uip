@@ -107,6 +107,7 @@ chdir($starting_dir);
 open(OUTPUT, "> httpd-cgi-conf.h") || die "Could not open file httpd-cgi-conf.h\n";
 foreach $akey (keys %cgi_names)
 {
+    $orig_akey = $akey;
     $akey = uc $akey;
     if( $akey =~ m/-/ )
     {
@@ -116,6 +117,7 @@ foreach $akey (keys %cgi_names)
         print "\n\t $akey_save converted to $akey";
         print "\n";
     }
-    print(OUTPUT "#define ENABLE_CGI_$akey \n");
+    print(OUTPUT "#define ENABLE_CGI_$akey $orig_akey\n");
+    print(OUTPUT "#define ENABLE_CGI_" . $akey . "_LIST &" . $orig_akey . ",\n\n");
 }
 close(OUTPUT);

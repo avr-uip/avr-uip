@@ -25,7 +25,7 @@ TCP          Packets received
              Retransmissions
 	     No connection avaliable
 	     Connection attempts to closed ports
-</pre></td><td><pre>%! net-stats
+</pre></td><td><pre>%! net_stats
 </pre></table>
 </center>
 %!: /footer.html

@@ -39,6 +39,9 @@
 #include "psock.h"
 #include "httpd-fs.h"
 
+#define GET  0
+#define POST 1
+
 struct httpd_state {
   unsigned char timer;
   struct psock sin, sout;
@@ -46,12 +49,18 @@ struct httpd_state {
   char inputbuf[50];
   char filename[20];
   char state;
+  char request_type; /* get (0), post(1) */
   struct httpd_fs_file file;
   int len;
   PGM_P scriptptr;
   int scriptlen;
-  
+
   unsigned short count;
+
+#if defined(HTTP_POST_SUPPORT)
+  char    client_data[MAX_POST_DATA];
+  uint8_t client_data_len;
+#endif
 };
 
 void httpd_init(void);
@@ -59,5 +68,16 @@ void httpd_appcall(void);
 
 void httpd_log(char *msg);
 void httpd_log_file(u16_t *requester, char *file);
+
+/*note source - http://www.blooberry.com/indexdot/html/topics/urlencoding.htm  */
+#define ISO_nl        0x0a
+#define ISO_space     0x20
+#define ISO_bang      0x21
+#define ISO_percent   0x25
+#define ISO_period    0x2e
+#define ISO_slash     0x2f
+#define ISO_colon     0x3a
+#define ISO_ampersand 0x26
+#define ISO_question  0x3F
 
 #endif /* __HTTPD_H__ */

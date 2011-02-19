@@ -51,35 +51,55 @@
 #include "httpd-cgi.h"
 #include "httpd-fs.h"
 
+#include "websrv_help_functions.h"
+
 #include <stdio.h>
 #include <string.h>
 
-#if defined ENABLE_CGI_FILE-STATS
-HTTPD_CGI_CALL(file, "file-stats", file_stats);
+
+#if defined ENABLE_CGI_FILE_STATS
+#include "cgi-code/file_stats.c"
+HTTPD_CGI_CALL(file, "file_stats", file_stats);
+#else
+#define ENABLE_CGI_FILE_STATS_LIST
 #endif
 
-//HTTPD_CGI_CALL(tcp, "tcp-connections", tcp_stats);
-
-#if defined ENABLE_CGI_NET-STATS
-HTTPD_CGI_CALL(net, "net-stats", net_stats);
+#if defined ENABLE_CGI_NET_STATS
+#include "cgi-code/net_stats.c"
+HTTPD_CGI_CALL(net, "net_stats", net_stats);
+#else
+#define ENABLE_CGI_NET_STATS_LIST
 #endif
 
 #if defined ENABLE_CGI_MYCGI
+#include "cgi-code/mycgi.c"
 HTTPD_CGI_CALL(mycgi, "mycgi", mycgi_out);
+#else
+#define ENABLE_CGI_MYCGI_LIST
 #endif
 
-//static const struct httpd_cgi_call *calls[] = { &file, &tcp, &net, NULL };
+#if defined ENABLE_CGI_GET_SET_VALUE
+static char getsetvalue_str_g[20] = {0,0};
+#include "cgi-code/get_set_value.c"
+HTTPD_CGI_CALL(getsetvalue_get, "get_set_value", getsetvalue_out);
+HTTPD_CGI_CALL(getsetvalue_set, "getset_p.shtml", getsetvalue_in);
+#else
+#define ENABLE_CGI_GET_SET_VALUE_LIST
+#endif
+
+
 static const struct httpd_cgi_call *calls[] = { 
-#if defined ENABLE_CGI_FILE-STATS
-    &file,
-#endif    
-#if defined ENABLE_CGI_NET-STATS
-    &net,
-#endif    
-#if defined ENABLE_CGI_MYCGI
-    &mycgi,
-#endif    
+ENABLE_CGI_FILE_STATS_LIST
+ENABLE_CGI_NET_STATS_LIST
+ENABLE_CGI_MYCGI_LIST
+ENABLE_CGI_GET_SET_VALUE_LIST
     NULL };
+
+#if  defined(HTTP_POST_SUPPORT)
+static const struct httpd_cgi_call *post_calls[] = { 
+ENABLE_CGI_GET_SET_VALUE_LIST
+    NULL };
+#endif
 
 /*---------------------------------------------------------------------------*/
 static
@@ -89,153 +109,32 @@ PT_THREAD(nullfunction(struct httpd_state *s, char *ptr))
   PSOCK_END(&s->sout);
 }
 /*---------------------------------------------------------------------------*/
+
 httpd_cgifunction
-httpd_cgi(char *name)
+httpd_cgi_lookup(const char *name, const struct httpd_cgi_call **searchlist)
 {
   const struct httpd_cgi_call **f;
 
   /* Find the matching name in the table, return the function. */
-  for(f = calls; *f != NULL; ++f) {
+  for(f = searchlist; *f != NULL; ++f) {
     if(strncmp_P((*f)->name, name, strlen((*f)->name)) == 0) {
       return (*f)->function;
     }
   }
   return nullfunction;
 }
-/*---------------------------------------------------------------------------*/
-#if defined ENABLE_CGI_FILE-STATS
-static unsigned short
-generate_file_stats(void *arg)
-{
-  char *f = (char *)arg;
-  return snprintf((char *)uip_appdata, UIP_APPDATA_SIZE, "%5u", httpd_fs_count(f));
-}
-/*---------------------------------------------------------------------------*/
-static
-PT_THREAD(file_stats(struct httpd_state *s, char *ptr))
-{
-  PSOCK_BEGIN(&s->sout);
 
-  PSOCK_GENERATOR_SEND(&s->sout, generate_file_stats, strchr(ptr, ' ') + 1);
-  
-  PSOCK_END(&s->sout);
-}
-#endif  /* ENABLE_CGI_FILE-STATS */
-/*---------------------------------------------------------------------------*/
-#if defined ENABLE_CGI_MYCGI
-static
-PT_THREAD(mycgi_out(struct httpd_state *s, char *ptr))
+httpd_cgifunction
+httpd_cgi(const char *name)
 {
-  PSOCK_BEGIN(&s->sout);
-
-  PSOCK_SEND_STR(&s->sout, "Hello World, From a cgi.");
-  
-  PSOCK_END(&s->sout);
-}
-#endif  /* ENABLE_CGI_MYCGI */
-/*---------------------------------------------------------------------------*/
-// COMMENT OUT THE FOLLOWING TO SAVE RAM FROM VARS WE DON"T USE
-//static const char closed[] =   /*  "CLOSED",*/
-//{0x43, 0x4c, 0x4f, 0x53, 0x45, 0x44, 0};
-//static const char syn_rcvd[] = /*  "SYN-RCVD",*/
-//{0x53, 0x59, 0x4e, 0x2d, 0x52, 0x43, 0x56,
-// 0x44,  0};
-//static const char syn_sent[] = /*  "SYN-SENT",*/
-//{0x53, 0x59, 0x4e, 0x2d, 0x53, 0x45, 0x4e,
-// 0x54,  0};
-//static const char established[] = /*  "ESTABLISHED",*/
-//{0x45, 0x53, 0x54, 0x41, 0x42, 0x4c, 0x49, 0x53, 0x48,
-// 0x45, 0x44, 0};
-//static const char fin_wait_1[] = /*  "FIN-WAIT-1",*/
-//{0x46, 0x49, 0x4e, 0x2d, 0x57, 0x41, 0x49,
-// 0x54, 0x2d, 0x31, 0};
-//static const char fin_wait_2[] = /*  "FIN-WAIT-2",*/
-//{0x46, 0x49, 0x4e, 0x2d, 0x57, 0x41, 0x49,
-// 0x54, 0x2d, 0x32, 0};
-//static const char closing[] = /*  "CLOSING",*/
-//{0x43, 0x4c, 0x4f, 0x53, 0x49,
-// 0x4e, 0x47, 0};
-//static const char time_wait[] = /*  "TIME-WAIT,"*/
-//{0x54, 0x49, 0x4d, 0x45, 0x2d, 0x57, 0x41,
-// 0x49, 0x54, 0};
-//static const char last_ack[] = /*  "LAST-ACK"*/
-//{0x4c, 0x41, 0x53, 0x54, 0x2d, 0x41, 0x43,
-// 0x4b, 0};
-//
-//static const char *states[] = {
-//  closed,
-//  syn_rcvd,
-//  syn_sent,
-//  established,
-//  fin_wait_1,
-//  fin_wait_2,
-//  closing,
-//  time_wait,
-//  last_ack};
-//  
-//
-//static unsigned short
-//generate_tcp_stats(void *arg)
-//{
-//  struct uip_conn *conn;
-//  struct httpd_state *s = (struct httpd_state *)arg;
-//    
-//  conn = &uip_conns[s->count];
-//  return snprintf((char *)uip_appdata, UIP_APPDATA_SIZE,
-//		 "<tr><td>%d</td><td>%u.%u.%u.%u:%u</td><td>%s</td><td>%u</td><td>%u</td><td>%c %c</td></tr>\r\n",
-//		 htons(conn->lport),
-//		 htons(conn->ripaddr[0]) >> 8,
-//		 htons(conn->ripaddr[0]) & 0xff,
-//		 htons(conn->ripaddr[1]) >> 8,
-//		 htons(conn->ripaddr[1]) & 0xff,
-//		 htons(conn->rport),
-//		 states[conn->tcpstateflags & UIP_TS_MASK],
-//		 conn->nrtx,
-//		 conn->timer,
-//		 (uip_outstanding(conn))? '*':' ',
-//		 (uip_stopped(conn))? '!':' ');
-//}
-///*---------------------------------------------------------------------------*/
-//static
-//PT_THREAD(tcp_stats(struct httpd_state *s, char *ptr))
-//{
-//  
-//  PSOCK_BEGIN(&s->sout);
-//
-//  for(s->count = 0; s->count < UIP_CONNS; ++s->count) {
-//    if((uip_conns[s->count].tcpstateflags & UIP_TS_MASK) != UIP_CLOSED) {
-//      PSOCK_GENERATOR_SEND(&s->sout, generate_tcp_stats, s);
-//    }
-//  }
-//
-//  PSOCK_END(&s->sout);
-//}
-///*---------------------------------------------------------------------------*/
-#if defined ENABLE_CGI_NET-STATS
-static unsigned short
-generate_net_stats(void *arg)
-{
-  struct httpd_state *s = (struct httpd_state *)arg;
-  return snprintf((char *)uip_appdata, UIP_APPDATA_SIZE,
-		  "%5u\n", ((uip_stats_t *)&uip_stat)[s->count]);
+  return(httpd_cgi_lookup(name,calls));
 }
 
-static
-PT_THREAD(net_stats(struct httpd_state *s, char *ptr))
+#if  defined(HTTP_POST_SUPPORT)
+httpd_cgifunction
+httpd_cgi_post(const char *name)
 {
-  PSOCK_BEGIN(&s->sout);
-
-#if UIP_STATISTICS
-
-  for(s->count = 0; s->count < sizeof(uip_stat) / sizeof(uip_stats_t);
-      ++s->count) {
-    PSOCK_GENERATOR_SEND(&s->sout, generate_net_stats, s);
-  }
-  
-#endif /* UIP_STATISTICS */
-  
-  PSOCK_END(&s->sout);
+      return(httpd_cgi_lookup(name,post_calls));
 }
-#endif  /* ENABLE_CGI_NET-STATS */ 
-/*---------------------------------------------------------------------------*/
-/** @} */
+#endif
+
