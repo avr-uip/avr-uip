@@ -51,7 +51,7 @@
 #include "httpd-cgi.h"
 #include "httpd-fs.h"
 
-#include "websrv_help_functions.h"
+#include "websrv_helper_functions.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -78,13 +78,20 @@ HTTPD_CGI_CALL(mycgi, "mycgi", mycgi_out);
 #define ENABLE_CGI_MYCGI_LIST
 #endif
 
+#if defined ENABLE_CGI_HELLO
+HTTPD_CGI_CALL(hello, "hello", run_hello);
+#include "cgi-code/hello.c"
+#else
+#define ENABLE_CGI_HELLO_LIST
+#endif
+
 #if defined ENABLE_CGI_GET_SET_VALUE
 static char getsetvalue_str_g[20] = {0,0};
 #include "cgi-code/get_set_value.c"
 HTTPD_CGI_CALL(getsetvalue_get, "get_set_value", getsetvalue_out);
 HTTPD_CGI_CALL(getsetvalue_set, "getset_p.shtml", getsetvalue_in);
 #else
-#define ENABLE_CGI_GET_SET_VALUE_LIST
+#define ENABLE_CGI_GET_SET_VALUE_LIST 
 #endif
 
 
@@ -92,6 +99,7 @@ static const struct httpd_cgi_call *calls[] = {
 ENABLE_CGI_FILE_STATS_LIST
 ENABLE_CGI_NET_STATS_LIST
 ENABLE_CGI_MYCGI_LIST
+ENABLE_CGI_HELLO_LIST
 ENABLE_CGI_GET_SET_VALUE_LIST
     NULL };
 

@@ -319,13 +319,32 @@ PT_THREAD(handle_input(struct httpd_state *s))
     PSOCK_CLOSE_EXIT(&s->sin);
   }
 
-  /* read and store the file name */
-  if(s->inputbuf[1] == ISO_space) {
-    strncpy_P(s->filename, http_index_html, sizeof(s->filename));
-  } else {
-    s->inputbuf[PSOCK_DATALEN(&s->sin) - 1] = 0;
-    strncpy(s->filename, &s->inputbuf[0], sizeof(s->filename));
-  }
+    /* read and store the file name */
+    if(s->inputbuf[1] == ISO_space) {
+        strncpy_P(s->filename, http_index_html, sizeof(s->filename));
+    } else {
+        s->inputbuf[PSOCK_DATALEN(&s->sin) - 1] = 0;
+
+#if defined(HTTP_GET_PARAM_SUPPORT)
+    // note this code block taken from uhttpd-avr project
+        int i;
+        for(i=0 ; s->inputbuf[i]!=0 && s->inputbuf[i] != ISO_question ; i++);
+
+        if( s->inputbuf[i] == ISO_question )
+        {
+            s->inputbuf[i]=0;
+            strncpy(s->param,&s->inputbuf[i+1],sizeof(s->param));
+            s->param_len = strlen(s->param);
+        }
+        else
+        {
+            s->param[0] = 0;
+            s->param_len = 0;
+        }
+    // end note
+#endif                                                      
+        strncpy(s->filename, &s->inputbuf[0], sizeof(s->filename));
+    }
 
   /*  httpd_log_file(uip_conn->ripaddr, s->filename);*/
 
@@ -348,7 +367,7 @@ PT_THREAD(handle_input(struct httpd_state *s))
       }else if(strncmp_P(s->inputbuf, http_content_length, 15) == 0) {
         s->inputbuf[PSOCK_DATALEN(&s->sin) - 1] = 0;
         cont_len = atoi(&s->inputbuf[16]);
-        if (cont_len > MAX_POST_DATA) {
+        if (cont_len > MAX_PARAM_DATA) {
             strncpy_P(s->filename, http_413_html, sizeof(s->filename));
         }
       }

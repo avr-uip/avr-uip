@@ -57,9 +57,9 @@ struct httpd_state {
 
   unsigned short count;
 
-#if defined(HTTP_POST_SUPPORT)
-  char    client_data[MAX_POST_DATA];
-  uint8_t client_data_len;
+#if defined(HTTP_POST_SUPPORT) || defined(HTTP_GET_PARAM_SUPPORT)
+  char    param[MAX_PARAM_DATA];
+  uint8_t param_len;
 #endif
 };
 

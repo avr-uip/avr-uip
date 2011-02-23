@@ -1,3 +1,6 @@
+#define ENABLE_CGI_HELLO hello
+#define ENABLE_CGI_HELLO_LIST &hello,
+
 #define ENABLE_CGI_FILE_STATS file_stats
 #define ENABLE_CGI_FILE_STATS_LIST &file_stats,
 
