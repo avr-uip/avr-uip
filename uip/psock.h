@@ -375,6 +375,42 @@ char psock_newdata(struct psock *s);
 #define PSOCK_WAIT_THREAD(psock, condition)   \
   PT_WAIT_THREAD(&((psock)->pt), (condition))
 
+
+PT_THREAD(psock_send_P(struct psock *psock,  PGM_P buf, unsigned int len));
+
+/**
+ * Send data from the buffer in programm memory
+ *
+ * This macro sends data over a protosocket. The protosocket protothread blocks
+ * until all data has been sent and is known to have been received by
+ * the remote end of the TCP connection.
+ *
+ * \param psock (struct psock *) A pointer to the protosocket over which
+ * data is to be sent.
+ *
+ * \param data (PGM_P) A pointer to the data in programm memory that is to be sent.
+ *
+ * \param datalen (unsigned int) The length of the data that is to be
+ * sent.
+ *
+ * \hideinitializer
+ */
+#define PSOCK_SEND_P(psock, data, datalen)		\
+    PT_WAIT_THREAD(&((psock)->pt), psock_send_P(psock, data, datalen))
+
+/**
+ * \brief      Send a null-terminated string stored in program memory
+ * \param psock Pointer to the protosocket.
+ * \param str  The string to be sent.
+ *
+ *             This function sends a null-terminated string over the
+ *             protosocket.
+ *
+ * \hideinitializer
+ */
+#define PSOCK_SEND_PSTR(psock, str)      		\
+    PT_WAIT_THREAD(&((psock)->pt), psock_send_P(psock, str, strlen_P(str)))
+
 #endif /* __PSOCK_H__ */
 
 /** @} */

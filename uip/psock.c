@@ -336,3 +336,57 @@ psock_init(register struct psock *psock, char *buffer, unsigned int buffersize)
   PT_INIT(&psock->psockpt);
 }
 /*---------------------------------------------------------------------------*/
+
+char send_data_P(register struct psock *s)
+{
+  if(s->state != STATE_DATA_SENT || uip_rexmit()) {
+    if(s->sendlen > uip_mss()) {
+      uip_send_P((PGM_P)s->sendptr, uip_mss());
+    } else {
+      uip_send_P((PGM_P)s->sendptr, s->sendlen);
+    }
+    s->state = STATE_DATA_SENT;
+    return 1;
+  }
+  return 0;
+}
+
+PT_THREAD(psock_send_P(register struct psock *s,  PGM_P buf,
+		     unsigned int len))
+{
+  PT_BEGIN(&s->psockpt);
+
+  /* If there is no data to send, we exit immediately. */
+  if(len == 0) {
+    PT_EXIT(&s->psockpt);
+  }
+
+  /* Save the length of and a pointer to the data that is to be
+     sent. */
+  s->sendptr = buf;
+  s->sendlen = len;
+
+  s->state = STATE_NONE;
+
+  /* We loop here until all data is sent. The s->sendlen variable is
+     updated by the data_sent() function. */
+  while(s->sendlen > 0) {
+
+    /*
+     * The condition for this PT_WAIT_UNTIL is a little tricky: the
+     * protothread will wait here until all data has been acknowledged
+     * (data_acked() returns true) and until all data has been sent
+     * (send_data() returns true). The two functions data_acked() and
+     * send_data() must be called in succession to ensure that all
+     * data is sent. Therefore the & operator is used instead of the
+     * && operator, which would cause only the data_acked() function
+     * to be called when it returns false.
+     */
+    PT_WAIT_UNTIL(&s->psockpt, data_acked(s) & send_data_P(s));
+  }
+
+  s->state = STATE_NONE;
+  
+  PT_END(&s->psockpt);
+}
+

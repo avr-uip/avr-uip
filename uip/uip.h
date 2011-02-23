@@ -1595,6 +1595,8 @@ u16_t uip_tcpchksum(void);
 u16_t uip_udpchksum(void);
 
 
+void uip_send_P(PGM_VOID_P  data, int len);
+
 #endif /* __UIP_H__ */
 
 
