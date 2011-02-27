@@ -110,7 +110,7 @@ struct psock {
   const u8_t *sendptr;   /* Pointer to the next data to be sent. */
   u8_t *readptr;         /* Pointer to the next data to be read. */
   
-  char *bufptr;          /* Pointer to the buffer used for buffering
+  u8_t *bufptr;          /* Pointer to the buffer used for buffering
 			    incoming data. */
   
   u16_t sendlen;         /* The number of bytes left to be sent. */
