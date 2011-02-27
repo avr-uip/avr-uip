@@ -1,15 +1,5 @@
-/**
- * \addtogroup resolv
- * @{
- */
-/**
- * \file
- * DNS resolver code header file.
- * \author Adam Dunkels <adam@dunkels.com>
- */
-
 /*
- * Copyright (c) 2002-2003, Adam Dunkels.
+ * Copyright (c) 2001-2005, Adam Dunkels.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,38 +28,34 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: resolv.h,v 1.4 2006/06/11 21:46:37 adam Exp $
+ * $Id: httpd.h,v 1.2 2006/06/11 21:46:38 adam Exp $
  *
  */
-#ifndef __RESOLV_H__
-#define __RESOLV_H__
 
-typedef int uip_udp_appstate_t;
-void resolv_appcall(void);
-#define UIP_UDP_APPCALL resolv_appcall
+#ifndef __HTTPD_H__
+#define __HTTPD_H__
 
-#include "uipopt.h"
+#include "psock.h"
+#include "httpd-fs.h"
 
-/**
- * Callback function which is called when a hostname is found.
- *
- * This function must be implemented by the module that uses the DNS
- * resolver. It is called when a hostname is found, or when a hostname
- * was not found.
- *
- * \param name A pointer to the name that was looked up.  \param
- * ipaddr A pointer to a 4-byte array containing the IP address of the
- * hostname, or NULL if the hostname could not be found.
- */
-extern void resolv_found(char *name, u16_t *ipaddr);
+struct httpd_state {
+  unsigned char timer;
+  struct psock sin, sout;
+  struct pt outputpt, scriptpt;
+  char inputbuf[50];
+  char filename[20];
+  char state;
+  struct httpd_fs_file file;
+  int len;
+  bool script;
+  
+  unsigned short count;
+};
 
-/* Functions. */
-void resolv_conf(u16_t *dnsserver);
-u16_t *resolv_getserver(void);
-void resolv_init(void);
-u16_t *resolv_lookup(char *name);
-void resolv_query(char *name);
+void httpd_init(void);
+void httpd_appcall(void);
 
-#endif /* __RESOLV_H__ */
+void httpd_log(char *msg);
+void httpd_log_file(u16_t *requester, char *file);
 
-/** @} */
+#endif /* __HTTPD_H__ */
