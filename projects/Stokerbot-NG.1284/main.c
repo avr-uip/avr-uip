@@ -108,27 +108,6 @@ int main(void) {
 
 //else jtag (disabled)
 
-    printf("Waiting for LCD to init... \r\n");
-//    fprintf(&lcd_str, "?f?y0?x00    Stokerbot NG    ?n");
-    for (uint8_t i=0; i<50; i++)
-    {
-        printf("---");
-        wdt_reset();
-		/*
-        if (i == 10)	
-            fprintf(&lcd_str, "?f?y0?x00   .Stokerbot NG.   ?n");
-	if (i == 20)
-            fprintf(&lcd_str, "?f?y0?x00  ..Stokerbot NG..  ?n");
-        if (i == 30)
-            fprintf(&lcd_str, "?f?y0?x00 ...Stokerbot NG... ?n");
-        if (i == 40)
-            fprintf(&lcd_str, "?f?y0?x00....Stokerbot NG....?n");
-        _delay_ms(100);
-		*/
-    }
-   
-//    fprintf(&lcd_str, "?f?y0?x00....Stokerbot NG....?n");
-        
     //sensorScan = (uint8_t*) & tempbuf;
 
     if (eepromReadByte(0) == 255 || eepromReadByte(11) == 255)
@@ -276,7 +255,6 @@ int main(void) {
     uip_ipaddr(ipaddr, dnsip[0], dnsip[1], dnsip[2], dnsip[3]);
     resolv_conf(ipaddr);
     webclient_init();
-//    lcd_init(); //tcp to lcd interface
 
     printf("Stokerbot NG R3 ready  -  Firmware %u.%u ...\r\n", SBNG_VERSION_MAJOR, SBNG_VERSION_MINOR);
 //    fprintf(&lcd_str, "?y2?x00Firmware %u.%u ready.", SBNG_VERSION_MAJOR, SBNG_VERSION_MINOR);
