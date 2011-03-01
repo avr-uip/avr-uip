@@ -18,7 +18,7 @@
 
 
 //Define frequency
-#define F_CPU 12500000UL
+#define F_CPU 16000000UL
 //Mac adress definition for enc28j60
 #define ETHADDR0		0x00
 #define ETHADDR1		0xbd

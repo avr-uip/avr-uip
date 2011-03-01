@@ -19,13 +19,12 @@
 #include "timer.h"
 #include "clock-arch.h"
 #include "AVR035.h"
-// something missing #include "uart.h"
+#include "uart.h"
 #include "webclient.h"
 #include "resolv.h"
 #include "ds18x20.h"
 #include "eeprom.h"
 #include "analog.h"
-// missing an include file #include "SPILCD.h"
 
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
@@ -37,7 +36,7 @@ void updateCounters(void);
 void timedSaveEeprom(void);
 void timedAlarmCheck(void);
 
-//FILE uart_str = FDEV_SETUP_STREAM(uart_putchar0, NULL, _FDEV_SETUP_WRITE);
+FILE uart_str = FDEV_SETUP_STREAM(uart_putchar0, NULL, _FDEV_SETUP_WRITE);
 //FILE lcd_str = FDEV_SETUP_STREAM(uart_putchar1, NULL, _FDEV_SETUP_WRITE);
 
 extern volatile uint16_t tick;
@@ -52,7 +51,7 @@ uint8_t netmask[]={255,255,255,0};
 uint8_t dnsip[]={8,8,8,8}; // the google public DNS, don't change unless there is a real need
 
 ISR(WDT_vect) {
-    printf("WDT RESET !!!!!!!!!!!!!!!!!!!!\r\n");
+    printf("Watchdog caused reset\r\n");
     timedSaveEeprom();
     while(true); //Next WDT timeout will reset chip
 }
@@ -69,6 +68,14 @@ int main(void) {
     wdt_reset();
     cli();
 
+    clock_init();
+    usart_init(1000000, 9600);
+    stdout = &uart_str;
+    stderr = &uart_str;
+    stdin = &uart_str;
+
+    printf("TEST");
+
     uip_ipaddr_t ipaddr;
     struct timer periodic_timer, arp_timer;
     uint16_t timer_OW, timer_Simple, timer_Count, timer_EEProm, timer_SendData, timer_IOalarm, timer_network;
@@ -80,12 +87,6 @@ int main(void) {
     timer_IOalarm = 0;
     timer_network = 0;
     
-    clock_init();
-/*    usart_init(1000000, 9600);
-    stdout = &uart_str;
-    stderr = &uart_str;
-    stdin = &uart_str;
-*/
     if(resetSource & (1<<WDRF))
     {
         printf("Mega was reset by watchdog...\r\n");
@@ -164,7 +165,7 @@ int main(void) {
             eepromWriteByte(112, 0); //Digital port 2 = OUT
             eepromWriteByte(113, 0); //Digital port 3 = OUT
 
-	    wdt_reset();
+      	    wdt_reset();
             for (uint8_t alarm=1; alarm<=4; alarm++)
             {
                     uint16_t pos = 400 + ((alarm-1)*15); //400 415 430 445
@@ -231,8 +232,8 @@ int main(void) {
     uip_init();
 
     //sættes hvert for sig for uip og enc, skal rettes til en samlet setting, så vi kan bruge mymac
-//    struct uip_eth_addr mac = { {UIP_ETHADDR0, UIP_ETHADDR1, UIP_ETHADDR2, UIP_ETHADDR3, UIP_ETHADDR4, UIP_ETHADDR5} };
-    struct uip_eth_addr mac = {mymac[0], mymac[1], mymac[2], mymac[3], mymac[4], mymac[5]};
+    struct uip_eth_addr mac = { {UIP_ETHADDR0, UIP_ETHADDR1, UIP_ETHADDR2, UIP_ETHADDR3, UIP_ETHADDR4, UIP_ETHADDR5} };
+//    struct uip_eth_addr mac = {mymac[0], mymac[1], mymac[2], mymac[3], mymac[4], mymac[5]};
 
     uip_setethaddr(mac);
     httpd_init();
