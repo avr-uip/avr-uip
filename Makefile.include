@@ -1,5 +1,6 @@
+UNAME := $(shell uname)
 
-##CFLAGS += -save-temps
+CFLAGS += -save-temps
 
 #Include makefiles, directories and CFLAGS for application
 ifdef APPS
@@ -52,7 +53,7 @@ endif
 vpath %.c . $(UIPDIR) $(APPDIRS) $(DEVDIRS) $(LIBDIRS)
 
 #Rule for make all
-all: $(NAME).hex
+all:: $(NAME).hex
 
 #Define a genetic rule for building an object file
 $(OBJECTDIR)/%.o: %.c
@@ -91,39 +92,59 @@ $(NAME).out: dev_OBJECTS app_OBJECTS lib_OBJECTS $(NAME)_OBJECTS uip_OBJECTS
 #Rule for building hex file
 $(NAME).hex: $(NAME).out
 	$(OBJCOPY) -R .eeprom -O ihex $(OBJECTDIR)/$(NAME).out $(OBJECTDIR)/$(NAME).hex
-	#avr-size $(OBJECTDIR)/$(NAME).out
+ifeq ($(UNAME), Linux)
+	avr-size $(OBJECTDIR)/$(NAME).out
+else
 	avr-size -C --mcu=$(MCU) $(OBJECTDIR)/$(NAME).out
+endif
 
 #Loads without verifying
-load: $(NAME).hex
+load:: $(NAME).hex
 	set -x
-#	avrdude -V -p $(CHIP) -c $(PROGRAMMER) -e -B 2 -U flash:w:$(OBJECTDIR)/$(NAME).hex
+ifeq ($(UNAME), Linux)
+	avrdude -V -p $(CHIP) -c $(PROGRAMMER) -e -B 2 -U flash:w:$(OBJECTDIR)/$(NAME).hex
+else
 	Stk500.exe -d$(MCU) -e -if$(OBJECTDIR)/$(NAME).hex -pf -cUSB
+endif 
 	set +x
 
 #Loads with verification
-loadcheck: $(NAME).hex
+loadcheck:: $(NAME).hex
 	set -x
+ifeq ($(UNAME), Linux)
 	avrdude -p $(CHIP) -c $(PROGRAMMER) -e -B 2 -U flash:w:$(OBJECTDIR)/$(NAME).hex
+else
+	$(error "HMM.. what now... ")
+endif
 	set +x
 
 #Rules for burning fuses
-fuses:
+fuses::
 	set -x
+ifeq ($(UNAME), Linux)
 	avrdude -p $(CHIP) -c $(PROGRAMMER) -u -v -U lfuse:w:$(LFUSE):m
 	avrdude -p $(CHIP) -c $(PROGRAMMER) -u -v -U hfuse:w:$(HFUSE):m
+else
+	$(error "HMM.. what now... ")
+endif
 	set +x
 
 #Rules for reading fuses
-readfuses:
+readfuses::
 	set -x
+ifeq ($(UNAME), Linux)
 	avrdude -p $(CHIP) -c $(PROGRAMMER) -u -v -U lfuse:r:read-lfuse.hex:h
 	avrdude -p $(CHIP) -c $(PROGRAMMER) -u -v -U hfuse:r:read-hfuse.hex:h
+else
+	$(error "HMM.. what now... ")
+endif
 	set +x
 
 #clean up
-clean:
-	rm -fr *.o *~ *core uip $(OBJECTDIR) *.a
+clean::
+	rm -fr *.o *~ *core uip $(OBJECTDIR) *.a \
+	$(ALL_SOURCES:.c=.i) \
+	$(ALL_SOURCES:.c=.s) 
 
 #Clean the dependency files if this is required command
 ifneq ($(MAKECMDGOALS),clean)
@@ -134,5 +155,5 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 #display help file
-help:
+help::
 	echo "Somebody please write a help page for this makefile";
