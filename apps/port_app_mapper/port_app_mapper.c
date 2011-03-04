@@ -16,6 +16,9 @@
 #define TELNET_APP_CALL_MAP
 #endif
 
+#ifndef SIMPLE_HTTPD_APP_CALL_MAP
+#define SIMPLE_HTTPD_APP_CALL_MAP
+#endif
 
 #ifndef DHCPC_APP_CALL_MAP
 #define DHCPC_APP_CALL_MAP
