@@ -1,6 +1,6 @@
 UNAME := $(shell uname)
 
-CFLAGS += -save-temps
+#CFLAGS += -save-temps
 
 #Include makefiles, directories and CFLAGS for application
 ifdef APPS
