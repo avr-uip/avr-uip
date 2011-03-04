@@ -81,6 +81,7 @@
 #ifndef __PSOCK_H__
 #define __PSOCK_H__
 
+#include <avr/pgmspace.h>
 #include "uipopt.h"
 #include "pt.h"
 
@@ -376,7 +377,7 @@ char psock_newdata(struct psock *s);
   PT_WAIT_THREAD(&((psock)->pt), (condition))
 
 
-PT_THREAD(psock_send_P(struct psock *psock,  PGM_P buf, unsigned int len));
+PT_THREAD(psock_send_P(struct psock *psock, PGM_P buf, unsigned int len));
 
 /**
  * Send data from the buffer in programm memory
