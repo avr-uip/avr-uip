@@ -12,8 +12,13 @@ void simple_httpd_init(void)
 
 void simple_httpd_appcall(void)
 {
-  struct simple_httpd_state *s = &(uip_conn->appstate);
-
+#if defined PORT_APP_MAPPER
+	struct simple_httpd_state *s = &(httpd_state_list[0]);
+#else
+void simple_httpd_appcall(void)
+{
+	struct simple_httpd_state *s = &(uip_conn->appstate);
+#endif
   if(uip_connected()) {
 		PSOCK_INIT(&s->p, NULL, 0);
   }

@@ -2,15 +2,21 @@
 #define __SIMPLE_HTTPD_H__
 #include "psock.h"
 
-typedef struct simple_httpd_state {
+struct simple_httpd_state {
 	struct psock p;
-} uip_tcp_appstate_t;
+};
+
 
 void simple_httpd_appcall(void);
-#ifndef UIP_APPCALL
-#define UIP_APPCALL simple_httpd_appcall
-#endif /* UIP_APPCALL */
-
 void simple_httpd_init(void);
+
+#if defined PORT_APP_MAPPER
+	#define SIMPLE_HTTPD_APP_CALL_MAP {simple_httpd_appcall, 80, 0},
+	struct simple_httpd_state httpd_state_list[UIP_CONF_MAX_CONNECTIONS];
+#else
+	#define SIMPLE_HTTPD_APP_CALL_MAP
+	#define UIP_APPCALL simple_httpd_appcall
+	typedef struct simple_httpd_state uip_tcp_appstate_t;
+#endif
 
 #endif /* __SIMPLE_HTTPD_H__ */
