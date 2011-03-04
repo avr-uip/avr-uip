@@ -93,7 +93,7 @@ int main(void)
     }
 
 	uip_setethaddr(my_eth_addr);
-
+//_enable_dhcp = 1;
     if (_enable_dhcp)
     {
         // setup the dhcp renew timer the make the first request
@@ -129,7 +129,9 @@ int main(void)
     }
 
     // start up the webserver
-    httpd_init();
+//    httpd_init();
+	simple_httpd_init();
+	telnetd_init();
 
 
 	while(1){

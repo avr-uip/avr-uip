@@ -2,6 +2,7 @@
 #ifndef __GLOBAL_CONF_H__
 #define __GLOBAL_CONF_H__
 
+
 #ifdef PORTB1
 //Led on tuxgraphics board
 #define led_conf()      DDRB |= (1<<DDB1)
