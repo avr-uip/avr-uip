@@ -383,6 +383,9 @@ uip_init(void)
   }
   for(c = 0; c < UIP_CONNS; ++c) {
     uip_conns[c].tcpstateflags = UIP_CLOSED;
+#if defined PORT_APP_MAPPER
+	uip_conns[c].appstate = -1;
+#endif
   }
 #if UIP_ACTIVE_OPEN
   lastport = 1024;
@@ -391,6 +394,9 @@ uip_init(void)
 #if UIP_UDP
   for(c = 0; c < UIP_UDP_CONNS; ++c) {
     uip_udp_conns[c].lport = 0;
+#if defined PORT_APP_MAPPER
+	uip_udp_conns[c].appstate = -1;
+#endif
   }
 #endif /* UIP_UDP */
   
