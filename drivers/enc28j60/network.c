@@ -4,9 +4,7 @@
 #include <util/delay.h>
 
 unsigned int network_read(void){
-	uint16_t len;
-	len=enc28j60PacketReceive(UIP_BUFSIZE, (uint8_t *)uip_buf);
-	return len;
+	return ((uint16_t) enc28j60PacketReceive(UIP_BUFSIZE, (uint8_t *)uip_buf));
 }
 
 void network_send(void){
