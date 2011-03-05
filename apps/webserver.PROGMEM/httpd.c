@@ -67,9 +67,9 @@
 #include <string.h>
 #include <avr/pgmspace.h>
 
-
 #define STATE_WAITING 0
 #define STATE_OUTPUT  1
+#define STATE_UNUSED  3
 
 
 /*---------------------------------------------------------------------------*/
@@ -392,34 +392,96 @@ handle_connection(struct httpd_state *s)
     handle_output(s);
   }
 }
+
+int8_t alloc_state(void)
+{
+	int8_t found_state = -1;
+	uint8_t index = 0;
+	while (index < UIP_CONF_MAX_CONNECTIONS)
+	{
+		if (httpd_state_list[index].state == STATE_UNUSED)
+		{
+			found_state = index;
+			break;
+		}
+		index++;
+    }
+								
+	return (found_state);
+}
+
 /*---------------------------------------------------------------------------*/
 void
 httpd_appcall(void)
 {
-  struct httpd_state *s = (struct httpd_state *)&(uip_conn->appstate);
-led_blink();
-  if(uip_closed() || uip_aborted() || uip_timedout()) {
-  } else if(uip_connected()) {
-    PSOCK_INIT(&s->sin, s->inputbuf, sizeof(s->inputbuf) - 1);
-    PSOCK_INIT(&s->sout, s->inputbuf, sizeof(s->inputbuf) - 1);
-    PT_INIT(&s->outputpt);
-    s->state = STATE_WAITING;
-    /*    timer_set(&s->timer, CLOCK_SECOND * 100);*/
-    s->timer = 0;
-    handle_connection(s);
-  } else if(s != NULL) {
-    if(uip_poll()) {
-      ++s->timer;
-      if(s->timer >= 20) {
-        uip_abort();
-      }
-    } else {
-      s->timer = 0;
-    }
-    handle_connection(s);
-  } else {
-    uip_abort();
-  }
+#if PORT_APP_MAPPER
+	struct httpd_state *s;
+#else
+	struct httpd_state *s = (struct httpd_state *)&(uip_conn->appstate);
+#endif
+
+// debug led blink
+//led_blink();
+
+	if(uip_closed() || uip_aborted() || uip_timedout()) {
+#if PORT_APP_MAPPER
+		if (uip_conn->appstate != -1)
+		{
+			httpd_state_list[((int8_t)uip_conn->appstate)].state = STATE_UNUSED;
+			uip_conn->appstate = -1;
+		}
+#endif
+	} else if(uip_connected()) {
+#if PORT_APP_MAPPER
+		if ((uip_conn->appstate = alloc_state()) == -1)
+		{
+			// we are out of state space.  close the connection
+			// hope the client tries back again
+			uip_abort();
+			return;
+		}
+		// set the app state
+		s = &(httpd_state_list[((int8_t)uip_conn->appstate)]);
+#endif
+		PSOCK_INIT(&s->sin, s->inputbuf, sizeof(s->inputbuf) - 1);
+		PSOCK_INIT(&s->sout, s->inputbuf, sizeof(s->inputbuf) - 1);
+		PT_INIT(&s->outputpt);
+		s->state = STATE_WAITING;
+	    /*    timer_set(&s->timer, CLOCK_SECOND * 100);*/
+		s->timer = 0;
+		handle_connection(s);
+#if PORT_APP_MAPPER
+	} else if (uip_conn->appstate != -1) {
+		s = &(httpd_state_list[((int8_t)uip_conn->appstate)]);
+#else
+	} else if(s != NULL) {
+#endif
+		if(uip_poll()) {
+			++s->timer;
+			if(s->timer >= 20) {
+#if PORT_APP_MAPPER
+				if (uip_conn->appstate != -1)
+				{
+					httpd_state_list[((int8_t)uip_conn->appstate)].state = STATE_UNUSED;
+					uip_conn->appstate = -1;
+				}
+#endif
+				uip_abort();
+			}
+    	} else {
+			s->timer = 0;
+		}
+		handle_connection(s);
+	} else {
+#if PORT_APP_MAPPER
+		if (uip_conn->appstate != -1)
+		{
+			httpd_state_list[((int8_t)uip_conn->appstate)].state = STATE_UNUSED;
+			uip_conn->appstate = -1;
+		}
+#endif
+		uip_abort();
+	}
 }
 /*---------------------------------------------------------------------------*/
 /**
@@ -431,7 +493,15 @@ led_blink();
 void
 httpd_init(void)
 {
-  uip_listen(HTONS(80));
+#if PORT_APP_MAPPER
+	uint8_t index = 0;
+	while (index < UIP_CONF_MAX_CONNECTIONS)
+	{
+		httpd_state_list[index].state = STATE_UNUSED;
+		index++;
+	}
+#endif
+	uip_listen(HTONS(80));
 }
 /*---------------------------------------------------------------------------*/
 /** @} */

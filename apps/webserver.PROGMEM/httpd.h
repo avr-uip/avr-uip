@@ -80,4 +80,15 @@ void httpd_log_file(u16_t *requester, char *file);
 #define ISO_ampersand 0x26
 #define ISO_question  0x3F
 
+#if defined PORT_APP_MAPPER
+	#define WEBSERVER_APP_CALL_MAP {httpd_appcall, 80, 0},
+	#if !defined HTTPD_MAX_CONNECTIONS
+		#define HTTPD_MAX_CONNECTIONS UIP_CONF_MAX_CONNECTIONS
+	#endif
+	struct httpd_state httpd_state_list[HTTPD_MAX_CONNECTIONS];
+#else
+	#define WEBSERVER_APP_CALL_MAP
+	typedef struct httpd_state uip_tcp_appstate_t;
+#endif
+
 #endif /* __HTTPD_H__ */
