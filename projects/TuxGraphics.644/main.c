@@ -10,7 +10,7 @@
 #include "uip_arp.h"
 #include "network.h"
 #include "enc28j60.h"
-
+#include "apps-conf.h"
 #include <string.h>
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
@@ -129,8 +129,8 @@ int main(void)
     }
 
     // start up the webserver
-//    httpd_init();
-	simple_httpd_init();
+    httpd_init();
+	//simple_httpd_init();
 	telnetd_init();
 
 
@@ -184,7 +184,6 @@ int main(void)
             dhcpc_renew();
             timer_reset(&dhcp_timer);
         }
-
 	}
 	return 0;
 }

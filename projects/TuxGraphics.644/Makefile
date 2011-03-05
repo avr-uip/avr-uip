@@ -13,7 +13,7 @@ NAME    = TuxGraphics.644
 #### webserver.PROGMEM needs 19k of RAM for the default setup
 #APPS	= webserver.PROGMEM  
 #APPS	= dhcpc telnetd webserver.PROGMEM port_app_mapper
-APPS	= dhcpc telnetd simple-httpd port_app_mapper
+APPS	= dhcpc telnetd  webserver.PROGMEM port_app_mapper
 #APPS	= dhcpc simple-httpd
 
 #Compiled drivers
