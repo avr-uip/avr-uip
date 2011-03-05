@@ -7,11 +7,10 @@
 #include <string.h>
 #include <avr/interrupt.h>
 
-
 #include "global-conf.h"
-
 #include <util/delay.h>
 
+#include "port_app_mapper.h"
 #include "config.h"
 #include "uip_arp.h"
 #include "network.h"
@@ -73,8 +72,6 @@ int main(void) {
     stdout = &uart_str;
     stderr = &uart_str;
     stdin = &uart_str;
-
-    printf("TEST");
 
     uip_ipaddr_t ipaddr;
     struct timer periodic_timer, arp_timer;
@@ -189,7 +186,7 @@ int main(void) {
 
             eepromWriteByte(1, EEPROM_VERSION);
     }
-
+/*
     findSystemID(systemID);
 
     if (systemID[0] == 0) {
@@ -199,13 +196,14 @@ int main(void) {
         wdt_reset();
         while (true);
     } else {
+*/    
         //MAC will be 56 51 99 36 14 00 with example system id
         mymac[1] = systemID[1];
         mymac[2] = systemID[2];
         mymac[3] = systemID[3];
         mymac[4] = systemID[4];
         mymac[5] = systemID[5];
-    }
+//    }
 //    fprintf(&lcd_str, "?y1?x00ID: %02X%02X%02X%02X%02X%02X%02X%02X?n", systemID[0], systemID[1], systemID[2], systemID[3], systemID[4], systemID[5], systemID[6], systemID[7]);
 
     loadSimpleSensorData();

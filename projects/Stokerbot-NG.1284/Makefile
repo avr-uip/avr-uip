@@ -7,7 +7,7 @@ F_CPU = 16000000
 NAME    = AVRUIP
 
 #Compiled apps
-APPS    =  webserver.PROGMEM webclient.Stokerbot-NG resolv
+APPS    = webserver.PROGMEM webclient.Stokerbot-NG resolv port_app_mapper
 
 #APPS	= webserver.Stokerbot-NG 
 #APPS	= webserver.Stokerbot-NG webclient.Stokerbot-NG resolv.Stokerbot-NG lcd
