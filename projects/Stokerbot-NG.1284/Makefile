@@ -22,7 +22,7 @@ LIBS	+= misc 1wire analog eeprom uart
 #wireless lcd i2c-eeprom i2c-adc i2c-io
 
 #Project specific files
-$(NAME)_SOURCES = main.c clock-arch.c gateway.c
+$(NAME)_SOURCES = main.c clock-arch.c
 #$(NAME)_SOURCES = main.c clock-arch.c gateway.c
 
 CFLAGS	= -I. -Wall -mmcu=$(MCU) -g -fpack-struct -Os -funsigned-char -funsigned-bitfields -mcall-prologues -Wstrict-prototypes -std=gnu99 -DF_CPU=$(F_CPU)
