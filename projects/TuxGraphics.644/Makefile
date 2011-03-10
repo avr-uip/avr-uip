@@ -16,6 +16,9 @@ NAME    = TuxGraphics.644
 APPS	= dhcpc telnetd  webserver.PROGMEM port_app_mapper
 #APPS	= dhcpc simple-httpd
 
+HTTPD_FS_DIRNAME = httpd-fs
+#HTTPD_FS_DIRNAME = httpd-fs.netsetup
+
 #Compiled drivers
 DEVS	= enc28j60 #The rest are determined by makefiles for apps
 
