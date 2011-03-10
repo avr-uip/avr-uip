@@ -103,12 +103,6 @@ ENABLE_CGI_HELLO_LIST
 ENABLE_CGI_GET_SET_VALUE_LIST
     NULL };
 
-#if  defined(HTTP_POST_SUPPORT)
-static const struct httpd_cgi_call *post_calls[] = { 
-ENABLE_CGI_GET_SET_VALUE_LIST
-    NULL };
-#endif
-
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(nullfunction(struct httpd_state *s, char *ptr))
@@ -138,11 +132,4 @@ httpd_cgi(const char *name)
   return(httpd_cgi_lookup(name,calls));
 }
 
-#if  defined(HTTP_POST_SUPPORT)
-httpd_cgifunction
-httpd_cgi_post(const char *name)
-{
-      return(httpd_cgi_lookup(name,post_calls));
-}
-#endif
 
