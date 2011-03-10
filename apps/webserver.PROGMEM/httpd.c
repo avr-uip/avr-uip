@@ -359,17 +359,20 @@ PT_THREAD(handle_input(struct httpd_state *s))
       if(cont_len != 0) {
           /* does this line contain any data */
           if(PSOCK_DATALEN(&s->sin) > 2) {
-              PT_BEGIN(&s->scriptpt);
-	          PT_WAIT_THREAD(&s->scriptpt,
-                httpd_cgi_post(s->filename)(s, s->inputbuf[0]));
-              PT_END(&s->scriptpt);
+			s->inputbuf[PSOCK_DATALEN(&s->sin) - 1] = 0;
+            strncpy(s->param,&s->inputbuf[0],sizeof(s->param));
+            s->param_len = strlen(s->param);
+			break;
           }
       }else if(strncmp_P(s->inputbuf, http_content_length, 15) == 0) {
         s->inputbuf[PSOCK_DATALEN(&s->sin) - 1] = 0;
         cont_len = atoi(&s->inputbuf[16]);
         if (cont_len > MAX_PARAM_DATA) {
             strncpy_P(s->filename, http_413_html, sizeof(s->filename));
+			break;
         }
+        s->param[0] = 0;
+        s->param_len = 0;
       }
     }
 #endif
@@ -460,6 +463,7 @@ httpd_appcall(void)
 			++s->timer;
 			if(s->timer >= 20) {
 #if PORT_APP_MAPPER
+led_low();
 				if (uip_conn->appstate != -1)
 				{
 					httpd_state_list[((int8_t)uip_conn->appstate)].state = STATE_UNUSED;
@@ -495,7 +499,7 @@ httpd_init(void)
 {
 #if PORT_APP_MAPPER
 	uint8_t index = 0;
-	while (index < UIP_CONF_MAX_CONNECTIONS)
+	while (index < HTTPD_MAX_CONNECTIONS)
 	{
 		httpd_state_list[index].state = STATE_UNUSED;
 		index++;
