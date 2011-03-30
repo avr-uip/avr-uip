@@ -1,8 +1,9 @@
-#include "uip.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "simple-httpd.h"
+#include "uip.h"
+
 static int handle_connection(struct simple_httpd_state *s);
 
 void simple_httpd_init(void)
@@ -10,9 +11,9 @@ void simple_httpd_init(void)
 	uip_listen(HTONS(80));
 }
 
+#if defined PORT_APP_MAPPER
 void simple_httpd_appcall(void)
 {
-#if defined PORT_APP_MAPPER
 	struct simple_httpd_state *s = &(httpd_state_list[0]);
 #else
 void simple_httpd_appcall(void)
@@ -36,3 +37,4 @@ static int handle_connection(struct simple_httpd_state *s)
   PSOCK_CLOSE(&s->p);
   PSOCK_END(&s->p);
 }
+
