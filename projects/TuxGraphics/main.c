@@ -52,7 +52,8 @@ int main(void)
 	struct uip_eth_addr mac = {UIP_ETHADDR0, UIP_ETHADDR1, UIP_ETHADDR2, UIP_ETHADDR3, UIP_ETHADDR4, UIP_ETHADDR5};
 
 	uip_setethaddr(mac);
-    httpd_init();
+	simple_httpd_init();
+//    httpd_init();
 
 #ifdef __DHCPC_H__
 	dhcpc_init(&mac, 6);
