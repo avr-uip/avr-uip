@@ -2,6 +2,22 @@
 #ifndef __GLOBAL_CONF_H__
 #define __GLOBAL_CONF_H__
 
+
+#ifdef PORTB1
+//Led on tuxgraphics board
+#define led_conf()      DDRB |= (1<<DDB1)
+#define led_low()       PORTB |= (1<<PORTB1)
+#define led_high()      PORTB &= ~(1<<PORTB1)
+#define led_blink()     PORTB ^= (1<<PORTB1)
+#else
+//Led on tuxgraphics board
+#define led_conf()      DDRB |= (1<<DDB1)
+#define led_low()       PORTB |= (1<<PB1)
+#define led_high()      PORTB &= ~(1<<PB1)
+#define led_blink()     PORTB ^= (1<<PB1)
+#endif
+
+
 //Define frequency
 #define F_CPU 12500000UL
 //Mac adress definition for enc28j60
@@ -19,28 +35,40 @@
 #define UIP_ETHADDR4    ETHADDR4
 #define UIP_ETHADDR5    ETHADDR5
 
-// ENC28J60 SPI port
-#define ENC28J60_SPI_PORT		PORTB
-#define ENC28J60_SPI_DDR		DDRB
+#define USE_DHCP 0
+#define UIP_IPADDR0 192
+#define UIP_IPADDR1 168
+#define UIP_IPADDR2 2
+#define UIP_IPADDR3 77
+#define UIP_NETMASK0 255
+#define UIP_NETMASK1 255
+#define UIP_NETMASK2 255
+#define UIP_NETMASK3 0
+#define UIP_DRIPADDR0 192
+#define UIP_DRIPADDR1 168
+#define UIP_DRIPADDR2 2
+#define UIP_DRIPADDR3 1
 
-// pre ATMega328p 
-#ifdef PB5
-#define ENC28J60_SPI_SCK		PB5
-#define ENC28J60_SPI_MOSI		PB3
-#define ENC28J60_SPI_MISO		PB4
-#define ENC28J60_SPI_SS			PB2
-#define ENC28J60_CONTROL_CS		PB2
-#else
-#define ENC28J60_SPI_SCK        PORTB5
-#define ENC28J60_SPI_MOSI       PORTB3
-#define ENC28J60_SPI_MISO       PORTB4
-#define ENC28J60_SPI_SS         PORTB2
-#define ENC28J60_CONTROL_CS      PORTB2
+
+// KSZ8851 SPI port
+#define KSZ8851_SPI_PORT	PORTB
+#define KSZ8851_SPI_DDR		DDRB
+#define KSZ8851_SPI_SCK		PB1
+#define KSZ8851_SPI_MOSI	PB2
+#define KSZ8851_SPI_MISO	PB3
+
+// KSZ8851 CSN pin
+#define KSZ8851_CSN_PORT	PORTB
+#define KSZ8851_CSN_DDR		DDRB
+#define KSZ8851_CSN_PIN		PB0
+
+// KSZ8851 RESET pin
+#ifdef USE_KSZ8851_HW_RESET
+#error "not setup yep"
+#define KSZ8851_RESET_PORT 	PORTD
+#define KSZ8851_RESET_DDR 	DDRD
+#define KSZ8851_RESET_PIN 	NOTUSED
 #endif
-
-// ENC28J60 control port
-#define ENC28J60_CONTROL_PORT	PORTB
-#define ENC28J60_CONTROL_DDR	DDRB
 
 
 //Include uip.h gives all the uip configurations in uip-conf.h
