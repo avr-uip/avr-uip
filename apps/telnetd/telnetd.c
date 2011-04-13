@@ -208,6 +208,9 @@ get_char(u8_t c)
       s.buf[(int)s.bufptr] = 0;
       /*      petsciiconv_topetscii(s.buf, TELNETD_CONF_LINELEN);*/
     }
+	if((s.bufptr + 1) < sizeof(s.buf)) {
+		s.buf[(int)s.bufptr +1] = 0;
+	}
     shell_input(s.buf);
     s.bufptr = 0;
   } else {
