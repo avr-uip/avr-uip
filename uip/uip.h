@@ -53,6 +53,7 @@
 #ifndef __UIP_H__
 #define __UIP_H__
 
+#include <avr/pgmspace.h>
 #include "uipopt.h"
 
 /**
