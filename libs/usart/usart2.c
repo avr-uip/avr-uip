@@ -8,7 +8,7 @@
 
 // Initialise USART
 
-inline void USART0_init(uint16_t baudval) {
+void USART0_init(uint16_t baudval) {
 
 	UBRR0 = baudval;							// Set baud rate
 	UCSR0A &= ~(1<<U2X0);						// Turn off double speed 
@@ -18,7 +18,7 @@ inline void USART0_init(uint16_t baudval) {
 }
 
 
-inline void USART1_init(uint16_t baudval) {
+void USART1_init(uint16_t baudval) {
 
 	UBRR1 = baudval;
 	UCSR1A &= ~(1<<U2X1);

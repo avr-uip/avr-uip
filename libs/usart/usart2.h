@@ -23,7 +23,8 @@
  *
  *			   Note that this initialisation DOESN'T enable the interrupts Rx complete and Tx Complete
  */
-inline void USART0_init(uint16_t baudval);
+//inline void USART0_init(uint16_t baudval);
+void USART0_init(uint16_t baudval);
 
 
 /**
@@ -43,7 +44,8 @@ inline void USART0_init(uint16_t baudval);
  *
  *			   Note that this initialisation DOESN'T enable the interrupts Rx complete and Tx Complete
  */
-inline void USART1_init(uint16_t baudval);
+//inline void USART1_init(uint16_t baudval);
+void USART1_init(uint16_t baudval);
 
 
 /**

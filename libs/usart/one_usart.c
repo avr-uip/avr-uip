@@ -4,7 +4,7 @@
 /* For Atmel devices which have 1xUSART, and don't have the register names set up for >1 USART , eg UDR */
 
 
-inline void USART_init(uint16_t baudval) {
+void USART_init(uint16_t baudval) {
 
 	UBRR = baudval;
 	UCSRA &= ~(1<<U2X);					// Turn off double speed 
