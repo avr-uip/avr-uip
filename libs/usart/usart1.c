@@ -5,7 +5,8 @@
 /* For Atmel devices which have 1xUSART, but have the register names set up for >1 USART, eg UDR0 */
 
 
-inline void USART_init(uint16_t baudval) {
+void USART_init(uint16_t baudval) {
+//inline void USART_init(uint16_t baudval) {
   	
 //	UBRR0H = (uint8_t)(baudval>>8);	// Set baud rate
 //	UBRR0L = (uint8_t)baudval;

@@ -38,8 +38,6 @@ inline void USART_init(uint16_t baudval);
  */
 void USART_transmit(unsigned char data );
 
-// define a alias
-#define sendString(astring) USART_transmit(astring)
 
 /**
  * \brief	Transmit a string via USART at currently set baud rate.
@@ -54,6 +52,8 @@ void USART_transmit(unsigned char data );
  *
  */
 void USART_transmit_string(const unsigned char* data);
+// define a alias
+#define sendString(astring) USART_transmit_string(astring)
 
 
 /**

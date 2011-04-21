@@ -1,8 +1,6 @@
 #ifndef __USART1_H__
 #define __USART1_H__
 
-#include <avr/io.h>
-
 
 /**
  * \brief Initialise USART and set baud rate.
@@ -20,7 +18,8 @@
  *
  *			   Note that this initialisation DOESN'T enable the interrupts Rx complete and Tx Complete
  */
-inline void USART_init(uint16_t baudval);
+void USART_init(uint16_t baudval);
+//inline void USART_init(uint16_t baudval);
 
 
 /**
@@ -38,7 +37,7 @@ inline void USART_init(uint16_t baudval);
 inline void USART_transmit_string(const unsigned char* data);
 
 // define a alias
-#define sendString(astring) USART_transmit(astring)
+#define sendString(astring) USART_transmit_string(astring)
 
 /**
  * \brief      Transmit a character via USART at currently set baud rate.
