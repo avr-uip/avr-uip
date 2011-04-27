@@ -40,6 +40,10 @@
 #include "timer.h"
 #include "pt.h"
 
+// check that the uip buffer is large enough for dhcp to work.
+#if UIP_CONF_BUFFER_SIZE < 590
+  #error "DHCP will not work without a large enough buffer.  Set UIP_CONF_BUFFER_SIZE > 590 bytes"
+#endif
 
 #define STATE_INITIAL         0
 #define STATE_SENDING         1
