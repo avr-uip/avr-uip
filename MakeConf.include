@@ -40,9 +40,22 @@ endif
 #Compiler selection
 CC		= avr-gcc
 
+#check if we have a C lint tool
+LINT=
+
+FINDLINT:=$(shell which lint)
+
+ifeq ($(FINDLINT),)
+FINDLINT:=$(shell which splint)
+endif
+
+ifneq ($(FINDLINT),)
+LINT	= $(FINDLINT)
+endif
+
 #Compiler flags
 ifndef CFLAGS
-  CFLAGS	= -I. -Wall -mmcu=$(MCU) -g -fpack-struct -Os -funsigned-char -funsigned-bitfields -mcall-prologues -Wstrict-prototypes -std=gnu99
+  CFLAGS	= -Wall -mmcu=$(MCU) -g -fpack-struct -Os -funsigned-char -funsigned-bitfields -mcall-prologues -Wstrict-prototypes -std=gnu99
 endif 
 
 #Object translator

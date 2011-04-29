@@ -2,29 +2,34 @@ UNAME := $(shell uname)
 
 #CFLAGS += -save-temps
 
+INCLUDE_FLAGS += -I.
+
 #Include makefiles, directories and CFLAGS for application
 ifdef APPS
   APPDIRS = $(foreach APP, $(APPS), ${APPSDIR}/$(APP))
   -include $(foreach APP, $(APPS), ${APPSDIR}/$(APP)/Makefile.$(APP))
-  CFLAGS += $(addprefix -I${APPSDIR}/,$(APPS))
+  INCLUDE_FLAGS += $(addprefix -I${APPSDIR}/,$(APPS))
 endif
 
 #Include makefiles, directories and CFLAGS for device drivers
 ifdef DEVS
   DEVDIRS = $(foreach DEV, $(DEVS), ${DEVSDIR}/$(DEV))
   -include $(foreach DEV, $(DEVS), ${DEVSDIR}/$(DEV)/Makefile.$(DEV))
-  CFLAGS += $(addprefix -I${DEVSDIR}/,$(DEVS))
+  INCLUDE_FLAGS += $(addprefix -I${DEVSDIR}/,$(DEVS))
 endif
 
 #Include makefiles, directories and CFLAGS for libraries
 ifdef LIBS
   LIBDIRS = $(foreach LIB, $(LIBS), ${LIBSDIR}/$(LIB))
   -include $(foreach LIB, $(LIBS), ${LIBSDIR}/$(LIB)/Makefile.$(LIB))
-  CFLAGS += $(addprefix -I${LIBSDIR}/,$(LIBS))
+  INCLUDE_FLAGS += $(addprefix -I${LIBSDIR}/,$(LIBS))
 endif
 
 #Search for headerfiles in interfaces directories and uip dir
-CFLAGS += -I$(IDEVDIR) -I$(ILIBDIR) -I$(UIPDIR)
+INCLUDE_FLAGS += -I$(IDEVDIR) -I$(ILIBDIR) -I$(UIPDIR)
+
+#Add the Include search path flags to the CFLAGS
+CFLAGS += $(INCLUDE_FLAGS)
 
 #Define uip sources
 -include $(UIPDIR)/Makefile.uip
@@ -145,6 +150,23 @@ clean::
 	rm -fr *.o *~ *core uip $(OBJECTDIR) *.a \
 	$(ALL_SOURCES:.c=.i) \
 	$(ALL_SOURCES:.c=.s) 
+
+#Rule to check code via lint
+ifeq ($(LINT),)
+lint::
+	$(error "ERROR: could not find lint tool to no lint support")
+
+else
+lint:: $(ALL_SOURCES)
+ifeq ($(AVR_ARCH),)
+	$(error "ERROR: what a pain... need to automate this.  Please define your gcc arch such AVR_ARCH=\"__AVR_ATmega644__\"")
+endif
+ifeq ($(AVR_INCLUDE),)
+	$(error "ERROR: To use lint you must define AVR_INCLUDE to point to your cross compiler header area") 
+else
+	$(LINT) -D$(AVR_ARCH) -I$(AVR_INCLUDE) $(INCLUDE_FLAGS) $<
+endif
+endif # end of if we have lint
 
 #Clean the dependency files if this is required command
 ifneq ($(MAKECMDGOALS),clean)
