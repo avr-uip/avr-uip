@@ -35,7 +35,14 @@
 #ifndef __HTTPD_FS_H__
 #define __HTTPD_FS_H__
 
+#include "httpd-cgi-conf.h"
+
+// DEFINE THIS VIA MAKE FILE !!
+// SO THAT THE SCRIPT CAN SEE IT !!
+#ifdef ENABLE_CGI_FILE_STATS 
 #define HTTPD_FS_STATISTICS 1
+#endif
+// THE SCRIPT BEING makefsdata
 
 struct httpd_fs_file {
   char *data;

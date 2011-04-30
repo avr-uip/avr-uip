@@ -11,6 +11,7 @@ if ($#ARGV > -1)
     $httpd_fs_dir = $ARGV[$#ARGV];
 }
 
+
 chomp($starting_dir=`pwd`);
 chdir($httpd_fs_dir);
 
@@ -95,7 +96,7 @@ for($i = 0; $i < @fvars; $i++) {
     }
     print(OUTPUT "const struct httpd_fsdata_file file".$fvar."[] = {{$prevfile, data$fvar, ");
     print(OUTPUT "data$fvar + ". (length($file) + 1) .", ");
-    print(OUTPUT "sizeof(data$fvar) - ". (length($file) + 1) ."}};\n\n");
+    print(OUTPUT "(int) sizeof(data$fvar) - ". (length($file) + 1) ."}};\n\n");
 }
 
 print(OUTPUT "#define HTTPD_FS_ROOT file$fvars[$i - 1]\n\n");

@@ -353,19 +353,6 @@ static const char data_footer_html[] PROGMEM = {
 	0x20, 0x20, 0x3c, 0x2f, 0x62, 0x6f, 0x64, 0x79, 0x3e, 0xa, 
 	0x3c, 0x2f, 0x68, 0x74, 0x6d, 0x6c, 0x3e, 0};
 
-static const char data_hello_shtml[] PROGMEM = {
-	/* /hello.shtml */
-	0x2f, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x2e, 0x73, 0x68, 0x74, 0x6d, 0x6c, 0,
-	0x25, 0x21, 0x3a, 0x20, 0x2f, 0x68, 0x65, 0x61, 0x64, 0x65, 
-	0x72, 0x2e, 0x68, 0x74, 0x6d, 0x6c, 0xa, 0x3c, 0x68, 0x31, 
-	0x3e, 0x54, 0x68, 0x65, 0x20, 0x4f, 0x75, 0x74, 0x70, 0x75, 
-	0x74, 0x20, 0x6f, 0x66, 0x20, 0x61, 0x20, 0x43, 0x47, 0x49, 
-	0x20, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x3a, 0x3c, 0x2f, 
-	0x68, 0x31, 0x3e, 0x3c, 0x62, 0x72, 0x3e, 0xa, 0x25, 0x21, 
-	0x20, 0x68, 0x65, 0x6c, 0x6c, 0x6f, 0xa, 0x25, 0x21, 0x3a, 
-	0x20, 0x2f, 0x66, 0x6f, 0x6f, 0x74, 0x65, 0x72, 0x2e, 0x68, 
-	0x74, 0x6d, 0x6c, 0xa, 0};
-
 static const char data_fade_png[] PROGMEM = {
 	/* /fade.png */
 	0x2f, 0x66, 0x61, 0x64, 0x65, 0x2e, 0x70, 0x6e, 0x67, 0,
@@ -612,30 +599,28 @@ static const char data_files_shtml[] PROGMEM = {
 	0x2f, 0x66, 0x6f, 0x6f, 0x74, 0x65, 0x72, 0x2e, 0x68, 0x74, 
 	0x6d, 0x6c, 0xa, 0};
 
-const struct httpd_fsdata_file file_header_html[] = {{NULL, data_header_html, data_header_html + 13, sizeof(data_header_html) - 13}};
+const struct httpd_fsdata_file file_header_html[] = {{NULL, data_header_html, data_header_html + 13, (int) sizeof(data_header_html) - 13}};
 
-const struct httpd_fsdata_file file_413_html[] = {{file_header_html, data_413_html, data_413_html + 10, sizeof(data_413_html) - 10}};
+const struct httpd_fsdata_file file_413_html[] = {{file_header_html, data_413_html, data_413_html + 10, (int) sizeof(data_413_html) - 10}};
 
-const struct httpd_fsdata_file file_stats_shtml[] = {{file_413_html, data_stats_shtml, data_stats_shtml + 13, sizeof(data_stats_shtml) - 13}};
+const struct httpd_fsdata_file file_stats_shtml[] = {{file_413_html, data_stats_shtml, data_stats_shtml + 13, (int) sizeof(data_stats_shtml) - 13}};
 
-const struct httpd_fsdata_file file_tcp_shtml[] = {{file_stats_shtml, data_tcp_shtml, data_tcp_shtml + 11, sizeof(data_tcp_shtml) - 11}};
+const struct httpd_fsdata_file file_tcp_shtml[] = {{file_stats_shtml, data_tcp_shtml, data_tcp_shtml + 11, (int) sizeof(data_tcp_shtml) - 11}};
 
-const struct httpd_fsdata_file file_style_css[] = {{file_tcp_shtml, data_style_css, data_style_css + 11, sizeof(data_style_css) - 11}};
+const struct httpd_fsdata_file file_style_css[] = {{file_tcp_shtml, data_style_css, data_style_css + 11, (int) sizeof(data_style_css) - 11}};
 
-const struct httpd_fsdata_file file_404_html[] = {{file_style_css, data_404_html, data_404_html + 10, sizeof(data_404_html) - 10}};
+const struct httpd_fsdata_file file_404_html[] = {{file_style_css, data_404_html, data_404_html + 10, (int) sizeof(data_404_html) - 10}};
 
-const struct httpd_fsdata_file file_processes_shtml[] = {{file_404_html, data_processes_shtml, data_processes_shtml + 17, sizeof(data_processes_shtml) - 17}};
+const struct httpd_fsdata_file file_processes_shtml[] = {{file_404_html, data_processes_shtml, data_processes_shtml + 17, (int) sizeof(data_processes_shtml) - 17}};
 
-const struct httpd_fsdata_file file_footer_html[] = {{file_processes_shtml, data_footer_html, data_footer_html + 13, sizeof(data_footer_html) - 13}};
+const struct httpd_fsdata_file file_footer_html[] = {{file_processes_shtml, data_footer_html, data_footer_html + 13, (int) sizeof(data_footer_html) - 13}};
 
-const struct httpd_fsdata_file file_hello_shtml[] = {{file_footer_html, data_hello_shtml, data_hello_shtml + 13, sizeof(data_hello_shtml) - 13}};
+const struct httpd_fsdata_file file_fade_png[] = {{file_footer_html, data_fade_png, data_fade_png + 10, (int) sizeof(data_fade_png) - 10}};
 
-const struct httpd_fsdata_file file_fade_png[] = {{file_hello_shtml, data_fade_png, data_fade_png + 10, sizeof(data_fade_png) - 10}};
+const struct httpd_fsdata_file file_index_html[] = {{file_fade_png, data_index_html, data_index_html + 12, (int) sizeof(data_index_html) - 12}};
 
-const struct httpd_fsdata_file file_index_html[] = {{file_fade_png, data_index_html, data_index_html + 12, sizeof(data_index_html) - 12}};
-
-const struct httpd_fsdata_file file_files_shtml[] = {{file_index_html, data_files_shtml, data_files_shtml + 13, sizeof(data_files_shtml) - 13}};
+const struct httpd_fsdata_file file_files_shtml[] = {{file_index_html, data_files_shtml, data_files_shtml + 13, (int) sizeof(data_files_shtml) - 13}};
 
 #define HTTPD_FS_ROOT file_files_shtml
 
-#define HTTPD_FS_NUMFILES 12
+#define HTTPD_FS_NUMFILES 11
