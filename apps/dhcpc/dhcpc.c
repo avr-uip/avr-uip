@@ -39,6 +39,7 @@
 #include "dhcpc.h"
 #include "timer.h"
 #include "pt.h"
+#include "usart.h"
 
 // check that the uip buffer is large enough for dhcp to work.
 #if UIP_CONF_BUFFER_SIZE < 590
@@ -202,7 +203,7 @@ send_request(void)
 }
 /*---------------------------------------------------------------------------*/
 static u8_t
-parse_options(u8_t *optptr, int len)
+parse_options(u8_t *optptr, uint16_t len)
 {
   u8_t *end = optptr + len;
   u8_t type = 0;
@@ -256,17 +257,18 @@ PT_THREAD(handle_dhcp(void))
   
   /* try_again:*/
   s.state = STATE_SENDING;
-  s.ticks = CLOCK_SECOND * 3;
+  s.ticks = CLOCK_SECOND * 5;
 
   do {
     send_discover();
     timer_set(&s.timer, s.ticks);
 		// NOTE: fixed as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
     PT_YIELD_UNTIL(&s.pt, uip_newdata() || timer_expired(&s.timer));
-
+//sendString("Just got something\n\r");
 
     if(uip_newdata())
     {
+//sendString("Data\n\r");
         if (parse_msg() == DHCPOFFER)
         {
             s.state = STATE_OFFER_RECEIVED;
@@ -275,6 +277,7 @@ PT_THREAD(handle_dhcp(void))
     }
     else
     {
+//sendString("Timeout\n\r");
         if(s.ticks < CLOCK_SECOND * 60) {
             s.ticks *= 2;
         }
@@ -341,7 +344,7 @@ PT_THREAD(handle_dhcp(void))
 }
 /*---------------------------------------------------------------------------*/
 void
-dhcpc_init(const void *mac_addr, int mac_len)
+dhcpc_init(const void *mac_addr, uint8_t mac_len)
 {
   uip_ipaddr_t addr;
   
@@ -363,7 +366,9 @@ dhcpc_appcall(void)
     // only when we ask for a new ip if we have a udp conn setup
     // since the dhcpc_appcall will be called as part of the normal uip app loop
     if ((s.conn != NULL) && (s.state != STATE_CONFIG_RECEIVED))
-        handle_dhcp();
+	{
+        (void) handle_dhcp();
+	}
 }
 /*---------------------------------------------------------------------------*/
 void
@@ -385,5 +390,5 @@ dhcpc_renew(void)
     u16_t ipaddr[2];
     uip_ipaddr(ipaddr, 0,0,0,0);
     uip_sethostaddr(ipaddr);
-    handle_dhcp();
+    (void) handle_dhcp();
 }

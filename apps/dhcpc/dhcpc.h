@@ -38,12 +38,12 @@
 
 struct dhcpc_state {
   struct pt pt;
-  char state;
+  u8_t state;
   struct uip_udp_conn *conn;
   struct timer timer;
   u16_t ticks;
   const void *mac_addr;
-  int mac_len;
+  u8_t mac_len;
   
   u8_t serverid[4];
 
@@ -54,7 +54,7 @@ struct dhcpc_state {
   u16_t default_router[2];
 };
 
-void dhcpc_init(const void *mac_addr, int mac_len);
+void dhcpc_init(const void *mac_addr, uint8_t mac_len);
 void dhcpc_request(void);
 void dhcpc_renew(void);
 
@@ -64,7 +64,7 @@ void dhcpc_configured(const struct dhcpc_state *s);
 
 
 #if defined PORT_APP_MAPPER
-	#define DHCPC_APP_CALL_MAP {dhcpc_appcall, 68, 0},
+	#define DHCPC_APP_CALL_MAP {dhcpc_appcall, 0, 67},
 #else
 	#define DHCPC_APP_CALL_MAP
 	#define UIP_UDP_APPCALL dhcpc_appcall

@@ -4,6 +4,8 @@ UNAME := $(shell uname)
 
 INCLUDE_FLAGS += -I.
 
+LINT_OPT +=  -weak
+
 #Include makefiles, directories and CFLAGS for application
 ifdef APPS
   APPDIRS = $(foreach APP, $(APPS), ${APPSDIR}/$(APP))
@@ -164,7 +166,7 @@ endif
 ifeq ($(AVR_INCLUDE),)
 	$(error "ERROR: To use lint you must define AVR_INCLUDE to point to your cross compiler header area") 
 else
-	$(LINT) -D$(AVR_ARCH) -I$(AVR_INCLUDE) $(INCLUDE_FLAGS) $<
+	$(LINT) $(LINT_OPT) -D$(AVR_ARCH) -I$(AVR_INCLUDE) $(INCLUDE_FLAGS) $<
 endif
 endif # end of if we have lint
 
