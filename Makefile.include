@@ -89,8 +89,8 @@ dev_OBJECTS: ${addprefix $(OBJECTDIR)/, $(DEV_SOURCES:.c=.o)}
 #Define a genetic rule for building all project object files
 $(NAME)_OBJECTS: ${addprefix $(OBJECTDIR)/, $($(NAME)_SOURCES:.c=.o)}
 
-#Variable for all sources
-ALL_SOURCES = $(APP_SOURCES) $(UIP_SOURCES) $(DEV_SOURCES) $($(NAME)_SOURCES) $(LIB_SOURCES)
+#Variable for all sources (remove dups via sort)
+ALL_SOURCES = $(sort $(APP_SOURCES) $(UIP_SOURCES) $(DEV_SOURCES) $($(NAME)_SOURCES) $(LIB_SOURCES))
 
 #Rule for building the output files
 $(NAME).out: dev_OBJECTS app_OBJECTS lib_OBJECTS $(NAME)_OBJECTS uip_OBJECTS
@@ -166,7 +166,7 @@ endif
 ifeq ($(AVR_INCLUDE),)
 	$(error "ERROR: To use lint you must define AVR_INCLUDE to point to your cross compiler header area") 
 else
-	$(LINT) $(LINT_OPT) -D$(AVR_ARCH) -I$(AVR_INCLUDE) $(INCLUDE_FLAGS) $<
+	$(LINT) $(LINT_OPT) -D$(AVR_ARCH) -I$(AVR_INCLUDE) $(INCLUDE_FLAGS) $+
 endif
 endif # end of if we have lint
 
