@@ -153,7 +153,11 @@
  *
  * \hideinitializer
  */
+
+#ifndef UIP_REASSEMBLY
+#warning "\nUIP_REASSEMBLY should be defined as 1 (ON) or 0 (OFF) in your project area"
 #define UIP_REASSEMBLY 0
+#endif
 
 /**
  * The maximum time an IP fragment should wait in the reassembly
