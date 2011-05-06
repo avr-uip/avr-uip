@@ -39,7 +39,7 @@
 #include "dhcpc.h"
 #include "timer.h"
 #include "pt.h"
-#include "usart.h"
+//#include "usart.h"
 
 // check that the uip buffer is large enough for dhcp to work.
 #if UIP_CONF_BUFFER_SIZE < 590
