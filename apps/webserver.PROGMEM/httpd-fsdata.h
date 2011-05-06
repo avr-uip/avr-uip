@@ -45,7 +45,7 @@ struct httpd_fsdata_file {
   const int len;
 #ifdef HTTPD_FS_STATISTICS
 #if HTTPD_FS_STATISTICS == 1
-//  u16_t count;
+  u16_t count;
 #endif /* HTTPD_FS_STATISTICS */
 #endif /* HTTPD_FS_STATISTICS */
 };
@@ -57,7 +57,7 @@ struct httpd_fsdata_file_noconst {
   int len;
 #ifdef HTTPD_FS_STATISTICS
 #if HTTPD_FS_STATISTICS == 1
-//  u16_t count;
+  u16_t count;
 #endif /* HTTPD_FS_STATISTICS */
 #endif /* HTTPD_FS_STATISTICS */
 };
