@@ -63,6 +63,8 @@
 
 #include "global-conf.h"
 
+// debug #include "usart.h"
+
 
 #include <string.h>
 #include <avr/pgmspace.h>
@@ -134,24 +136,96 @@ next_scriptstate(struct httpd_state *s)
 static
 PT_THREAD(handle_script(struct httpd_state *s))
 {
+
+
+  PGM_P ptr;
   
   PT_BEGIN(&s->scriptpt);
 
-  PGM_P ptr;
-  char tmp_str[30];
-  memset (tmp_str, 0, 30);
 
   while(s->file.len > 0) {
-    memset (tmp_str, 0, 30);
+
     /* Check if we should start executing a script. */
+    if(pgm_read_byte_near(s->file.data) == ISO_percent &&
+       pgm_read_byte_near(s->file.data + 1) == ISO_bang) {
+      s->scriptptr = s->file.data + 3;
+      s->scriptlen = s->file.len - 3;
+
+      if(pgm_read_byte_near(s->scriptptr - 1) == ISO_colon) {
+
+            strncpy_P(s->tmp_str, s->scriptptr + 1, sizeof(s->tmp_str) -1);
+			if(httpd_fs_open(s->tmp_str, &s->file) ||
+				httpd_fs_open(s->tmp_str + 1 , &s->file)) {
+				PT_WAIT_THREAD(&s->scriptpt, 
+           send_file(s));
+			} else {
+            // could not open the file.
+			}
+
+      } else {
+            strncpy_P(s->tmp_str, s->scriptptr, sizeof(s->tmp_str) -1);
+			((s->tmp_str)[sizeof(s->tmp_str) - 1]) = '\0';
+					PT_WAIT_THREAD(&s->scriptpt, 
+           httpd_cgi(s->tmp_str)(s, s->tmp_str));
+      }
+      next_scriptstate(s);
+      
+      /* The script is over, so we reset the pointers and continue
+    	 sending the rest of the file. */
+      s->file.data = s->scriptptr;
+      s->file.len = s->scriptlen;
+    } else {
+      /* See if we find the start of script marker in the block of HTML
+	        to be sent. */
+
+      if(s->file.len > uip_mss()) {
+	      s->len = uip_mss();
+      } else {
+	      s->len = s->file.len;
+      }
+
+      if(pgm_read_byte_near(s->file.data) == ISO_percent) {
+	      ptr = strchr_P(s->file.data + 1, ISO_percent);
+
+      } else {
+	      ptr = strchr_P(s->file.data, ISO_percent);
+
+      }
+
+      if(ptr != NULL &&
+      	 ptr != s->file.data) {
+        	s->len = (int)(ptr - s->file.data);
+        	if(s->len >= uip_mss()) {
+        	  s->len = uip_mss();
+      	}
+      }
+
+      PT_WAIT_THREAD(&s->scriptpt, send_part_of_file(s));
+
+      s->file.data += s->len;
+      s->file.len -= s->len;
+      
+    }
+  }
+  
+  PT_END(&s->scriptpt);
+
+
+	/*
+  PGM_P ptr;
+  
+  PT_BEGIN(&s->scriptpt);
+
+  while(s->file.len > 0) {
+    // Check if we should start executing a script.
     if( (pgm_read_byte(s->file.data) == ISO_percent) &&
         (pgm_read_byte(s->file.data + 1) == ISO_bang)) {
       s->scriptptr = s->file.data + 3;
       s->scriptlen = s->file.len - 3;
 
       if(pgm_read_byte(s->scriptptr - 1) == ISO_colon) {
-          strncpy_P(tmp_str, s->scriptptr + 1, 29);
-        if (httpd_fs_open(tmp_str, &s->file))
+          strncpy_P(s->tmp_str, s->scriptptr + 1, sizeof(s->tmp_str) -1);
+        if (httpd_fs_open(s->tmp_str, &s->file))
         {
 	        PT_WAIT_THREAD(&s->scriptpt, send_file(s));
         }
@@ -162,13 +236,13 @@ PT_THREAD(handle_script(struct httpd_state *s))
 
       next_scriptstate(s);
       
-      /* The script is over, so we reset the pointers and continue
-	 sending the rest of the file. */
+      // The script is over, so we reset the pointers and continue
+	  // sending the rest of the file.
       s->file.data = s->scriptptr;
       s->file.len = s->scriptlen;
     } else {
-      /* See if we find the start of script marker in the block of HTML
-	     to be sent. */
+      // See if we find the start of script marker in the block of HTML
+	  //   to be sent. 
 
       if(s->file.len > uip_mss()) {
         s->len = uip_mss();
@@ -198,73 +272,121 @@ PT_THREAD(handle_script(struct httpd_state *s))
   }
   
   PT_END(&s->scriptpt);
+  */
 }
 /*---------------------------------------------------------------------------*/
 static
 PT_THREAD(send_headers(struct httpd_state *s, const char *statushdr))
 {
 
-  PT_BEGIN(&s->outputpt);
+  char *ptr;
+
+  PSOCK_BEGIN(&s->sout);
+
+  PSOCK_SEND_PSTR(&s->sout, statushdr);
+
+  ptr = strrchr(s->filename, ISO_period);
+
+  if(ptr == NULL) {
+    PSOCK_SEND_PSTR(&s->sout, http_content_type_binary);
+	PSOCK_SEND_PSTR(&s->sout, http_content_length);
+	PSOCK_SEND_STR(&s->sout, s->tmp_str);
+	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+  } else if(strncmp_P( ptr,http_html, 5) == 0 ||
+	        strncmp_P( ptr,http_shtml, 6) == 0) {
+    PSOCK_SEND_PSTR(&s->sout, http_content_type_html);
+  } else if(strncmp_P(ptr,http_css,  4) == 0) {
+    PSOCK_SEND_PSTR(&s->sout, http_content_type_css);
+  } else if(strncmp_P(ptr,http_png, 4) == 0) {
+    PSOCK_SEND_PSTR(&s->sout, http_content_type_png);
+	PSOCK_SEND_PSTR(&s->sout, http_content_length);
+	PSOCK_SEND_STR(&s->sout, s->tmp_str);
+	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+  } else if(strncmp_P( ptr, http_gif, 4) == 0) {
+    PSOCK_SEND_PSTR(&s->sout, http_content_type_gif);
+	PSOCK_SEND_PSTR(&s->sout, http_content_length);
+	PSOCK_SEND_STR(&s->sout, s->tmp_str);
+	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+  } else if(strncmp_P( ptr, http_jpg, 4) == 0) {
+    PSOCK_SEND_PSTR(&s->sout, http_content_type_jpg);
+	PSOCK_SEND_PSTR(&s->sout, http_content_length);
+	PSOCK_SEND_STR(&s->sout, s->tmp_str);
+	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+  } else {
+    PSOCK_SEND_PSTR(&s->sout, http_content_type_plain);
+  }
+
+  PSOCK_END(&s->sout);
+									  												
+
+/*  PT_BEGIN(&s->outputpt);
 
   char *ptr;
-  PGM_P save_dptr = NULL;
-  int   save_len = 0;
 
   //PSOCK_BEGIN(&s->sout);
 
   // save the current state of the file
-  save_dptr = s->file.data;
-  save_len  = s->len;
+  s->tmp_charp = s->file.data;
+  s->tmp_int   = s->len;
 
   s->file.data = (char *) statushdr;
   s->len = strlen_P(statushdr);   
   PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//  PSOCK_SEND_STR(&s->sout, statushdr);
 
   ptr = strrchr(s->filename, ISO_period);
   if(ptr == NULL) {
     s->file.data = (char *)http_content_type_binary;
     s->len = strlen_P(http_content_type_binary);   
     PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//    PSOCK_SEND_STR(&s->sout, http_content_type_binary);
+	s->len = 0; // use as flag to say, sent content lengh
   } else if(strncmp_P(ptr, http_html, 5) == 0 ||
 	        strncmp_P(ptr, http_shtml, 6) == 0) {
     s->file.data = (char *)http_content_type_html;
     s->len = strlen_P(http_content_type_html);   
     PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//    PSOCK_SEND_STR(&s->sout, http_content_type_html);
   } else if(strncmp_P(ptr, http_css, 4) == 0) {
     s->file.data = (char *)http_content_type_css;
     s->len = strlen_P(http_content_type_css);   
     PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//    PSOCK_SEND_STR(&s->sout, http_content_type_css);
   } else if(strncmp_P(ptr, http_png, 4) == 0) {
     s->file.data = (char *)http_content_type_png;
     s->len = strlen_P(http_content_type_png);   
     PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//    PSOCK_SEND_STR(&s->sout, http_content_type_png);
+	s->len = 0; // use as flag to say, sent content lengh
   } else if(strncmp_P(ptr, http_gif, 4) == 0) {
     s->file.data = (char *)http_content_type_gif;
     s->len = strlen_P(http_content_type_gif);   
     PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//    PSOCK_SEND_STR(&s->sout, http_content_type_gif);
+	s->len = 0; // use as flag to say, sent content lengh
   } else if(strncmp_P(ptr, http_jpg, 4) == 0) {
     s->file.data = (char *)http_content_type_jpg;
     s->len = strlen_P(http_content_type_jpg);   
     PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//    PSOCK_SEND_STR(&s->sout, http_content_type_jpg);
+	s->len = 0; // use as flag to say, sent content lengh
   } else {
     s->file.data = (char *)http_content_type_plain;
     s->len = strlen_P(http_content_type_plain);   
     PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
-//    PSOCK_SEND_STR(&s->sout, http_content_type_plain);
   }
 
+  // ugly flag hack to send the content len
+//  if (s->len == 0)
+//  {
+  //  s->file.data = (char *)http_content_length;
+ //   s->len = strlen_P(http_content_length);
+ //   PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
+    snprintf(s->str_tmp, sizeof(s->str_tmp) -1, "%d", s->tmp_int);
+	PSOCK_SEND_STR(&s->sout, s->str_tmp);
+	s->file.data = (char *)http_crnlcrln;
+	s->len = strlen_P(http_crnlcrln);
+	PT_WAIT_THREAD(&s->outputpt, send_part_of_file(s));
+//  }
+
   // restore the state of the file
-  s->file.data = (char *)save_dptr;
-  s->len = save_len;
+  s->file.data = s->tmp_charp;
+  s->len = s->tmp_int;
   PT_END(&s->outputpt);
-//  PSOCK_END(&s->sout);
+  */
 }
 /*---------------------------------------------------------------------------*/
 static
@@ -280,6 +402,8 @@ PT_THREAD(handle_output(struct httpd_state *s))
     PT_WAIT_THREAD(&s->outputpt, send_headers(s, http_header_404));
     PT_WAIT_THREAD(&s->outputpt, send_file(s));
   } else {
+    snprintf(s->tmp_str, sizeof(s->tmp_str) -1, "%d", s->file.len);
+    //snprintf(s->str_tmp, 8, "%d", s->len);
     PT_WAIT_THREAD(&s->outputpt, send_headers(s, http_header_200));
     ptr = strchr(s->filename, ISO_period);
     if(ptr != NULL && strncmp_P(ptr, http_shtml, 6) == 0) {
@@ -423,13 +547,13 @@ httpd_appcall(void)
 	struct httpd_state *s = (struct httpd_state *)&(uip_conn->appstate);
 #endif
 
-// debug led blink
-//led_blink();
 
 	if(uip_closed() || uip_aborted() || uip_timedout()) {
 #if PORT_APP_MAPPER
+//sendString("uip close/abort/timeout\r\n");
 		if (uip_conn->appstate != -1)
 		{
+//sendString("uip close/abort/timeout - cleanup\r\n");
 			httpd_state_list[((int8_t)uip_conn->appstate)].state = STATE_UNUSED;
 			uip_conn->appstate = -1;
 		}
@@ -440,6 +564,7 @@ httpd_appcall(void)
 		{
 			// we are out of state space.  close the connection
 			// hope the client tries back again
+//sendString("Out of http stats\r\n");
 			uip_abort();
 			return;
 		}
@@ -461,9 +586,13 @@ httpd_appcall(void)
 #endif
 		if(uip_poll()) {
 			++s->timer;
-			if(s->timer >= 20) {
+			// if the client just hasn't sent
+			// anything in a while we end up here
+			// this is where we can clean up dead connections.
+			// 20 seems like a long time - if(s->timer >= 20) {
+			// 16 seems to be a good number wtih 5 status
+			if(s->timer >= 16) {
 #if PORT_APP_MAPPER
-led_low();
 				if (uip_conn->appstate != -1)
 				{
 					httpd_state_list[((int8_t)uip_conn->appstate)].state = STATE_UNUSED;
