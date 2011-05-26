@@ -67,7 +67,7 @@ foreach $file (@files) {
 		$i = 0;
 	    }
 	}
-	print(OUTPUT "0};\n\n");
+	print(OUTPUT "};\n\n");
 	close(FILE);
 	push(@fvars, $fvar);
 	push(@pfiles, $file);
