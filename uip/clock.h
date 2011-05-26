@@ -72,6 +72,9 @@ void clock_init(void);
  */
 clock_time_t clock_time(void);
 
+
+void clock_set_time(clock_time_t totime);
+
 /**
  * A second, measured in system clock time.
  *

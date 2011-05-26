@@ -1,4 +1,5 @@
 #define DEBUG_PRINTF(...) /*printf(__VA_ARGS__)*/
+//#define DEBUG_PRINTF(...) printf(__VA_ARGS__)
 
 /**
  * \defgroup uip The uIP TCP/IP stack
@@ -89,6 +90,8 @@
 
 #include <string.h>
 
+//#include "usart.h"
+
 /*---------------------------------------------------------------------------*/
 /* Variable definitions. */
 
@@ -157,7 +160,7 @@ u16_t uip_len, uip_slen;
 				depending on the maximum packet
 				size. */
 
-u8_t uip_flags;     /* The uip_flags variable is used for
+volatile u8_t uip_flags;     /* The uip_flags variable is used for
 				communication between the TCP/IP stack
 				and the application program. */
 struct uip_conn *uip_conn;   /* uip_conn always points to the current
@@ -1103,7 +1106,6 @@ uip_process(u8_t flag)
 #else /* UIP_UDP_CHECKSUMS */
   uip_len = uip_len - UIP_IPUDPH_LEN;
 #endif /* UIP_UDP_CHECKSUMS */
-
   /* Demultiplex this UDP packet between the UDP "connections". */
   for(uip_udp_conn = &uip_udp_conns[0];
       uip_udp_conn < &uip_udp_conns[UIP_UDP_CONNS];
