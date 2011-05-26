@@ -39,6 +39,16 @@
 #include "psock.h"
 #include "httpd-fs.h"
 
+#if defined(UIP_REASSEMBLY)
+  #if UIP_REASSEMBLY == 0
+    #if defined(HTTPD_FRAGMENTS)
+	  #warning "If you use a web browser with this httpd you should have UIP_REASSEMBLY=1"
+    #else
+      #error "For most modern web browsers you need to have UIP_REASSEMBLY=1 in order to decode most TCP packets as they become fragmented.  If you will not be accessing this server with a full web browser then define HTTPD_FRAGMENTS"
+	#endif
+  #endif
+#endif
+
 #define GET  0
 #define POST 1
 
@@ -54,12 +64,15 @@ struct httpd_state {
   int len;
   PGM_P scriptptr;
   int scriptlen;
+  int tmp_int;
+  char *tmp_charp;
+  char tmp_str[30];
 
   unsigned short count;
 
 #if defined(HTTP_POST_SUPPORT) || defined(HTTP_GET_PARAM_SUPPORT)
   char    param[MAX_PARAM_DATA];
-  uint8_t param_len;
+  uint16_t param_len;
 #endif
 };
 

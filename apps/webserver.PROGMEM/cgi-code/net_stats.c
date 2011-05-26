@@ -4,13 +4,13 @@ static unsigned short
 generate_net_stats(void *arg)
 {
   struct httpd_state *s = (struct httpd_state *)arg;
-  return snprintf((char *)uip_appdata, UIP_APPDATA_SIZE,
+  return (unsigned short)snprintf((char *)uip_appdata, UIP_APPDATA_SIZE,
 		  "%5u\n", ((uip_stats_t *)&uip_stat)[s->count]);
 }
 #endif /* UIP_STATISTICS */
 
 static
-PT_THREAD(net_stats(struct httpd_state *s, char *ptr))
+PT_THREAD(net_stats_cgi(struct httpd_state *s, char *ptr))
 {
   PSOCK_BEGIN(&s->sout);
 

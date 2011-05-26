@@ -59,14 +59,14 @@
 
 #if defined ENABLE_CGI_FILE_STATS
 #include "cgi-code/file_stats.c"
-HTTPD_CGI_CALL(file, "file_stats", file_stats);
+HTTPD_CGI_CALL(file_stats, "file_stats", file_stats_cgi);
 #else
 #define ENABLE_CGI_FILE_STATS_LIST
 #endif
 
 #if defined ENABLE_CGI_NET_STATS
 #include "cgi-code/net_stats.c"
-HTTPD_CGI_CALL(net, "net_stats", net_stats);
+HTTPD_CGI_CALL(net_stats, "net_stats", net_stats_cgi);
 #else
 #define ENABLE_CGI_NET_STATS_LIST
 #endif
@@ -79,8 +79,8 @@ HTTPD_CGI_CALL(mycgi, "mycgi", mycgi_out);
 #endif
 
 #if defined ENABLE_CGI_HELLO
-HTTPD_CGI_CALL(hello, "hello", run_hello);
 #include "cgi-code/hello.c"
+HTTPD_CGI_CALL(hello, "hello", run_hello);
 #else
 #define ENABLE_CGI_HELLO_LIST
 #endif
@@ -94,6 +94,12 @@ HTTPD_CGI_CALL(getsetvalue_set, "getset_p.shtml", getsetvalue_in);
 #define ENABLE_CGI_GET_SET_VALUE_LIST 
 #endif
 
+#if defined ENABLE_CGI_TCP_CONNECTIONS
+#include "cgi-code/tcp.c"
+HTTPD_CGI_CALL(tcp, "tcp-connections", tcp_stats);
+#else
+#define ENABLE_CGI_TCP_CONNECTIONS
+#endif
 
 static const struct httpd_cgi_call *calls[] = { 
 ENABLE_CGI_FILE_STATS_LIST
@@ -101,6 +107,7 @@ ENABLE_CGI_NET_STATS_LIST
 ENABLE_CGI_MYCGI_LIST
 ENABLE_CGI_HELLO_LIST
 ENABLE_CGI_GET_SET_VALUE_LIST
+ENABLE_CGI_TCP_CONNECTIONS
     NULL };
 
 /*---------------------------------------------------------------------------*/
@@ -119,7 +126,8 @@ httpd_cgi_lookup(const char *name, const struct httpd_cgi_call **searchlist)
 
   /* Find the matching name in the table, return the function. */
   for(f = searchlist; *f != NULL; ++f) {
-    if(strncmp_P((*f)->name, name, strlen((*f)->name)) == 0) {
+    if((strlen((*f)->name) > 2) &&
+	    (strncmp((*f)->name, name, strlen((*f)->name)) == 0)) {
       return (*f)->function;
     }
   }
