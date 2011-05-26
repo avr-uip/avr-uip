@@ -4,6 +4,8 @@
 #include "port_app_mapper.h"
 #include "global-conf.h"
 
+//#include "usart.h"
+
 #ifndef WEBSERVER_APP_CALL_MAP
 #define WEBSERVER_APP_CALL_MAP
 #endif
@@ -53,7 +55,9 @@ void uip_port_app_mapper(struct port_appcall_map* cur_map)
 	if ((cur_map == udp_port_app_map) && 
 		(cur_map->an_appcall != NULL))
 	{
+//		sendString("\n\rcalling UDP app\n\r");
 		cur_map->an_appcall();
+
 		return;
 	}
 
@@ -82,6 +86,7 @@ void uip_port_app_mapper(struct port_appcall_map* cur_map)
 				 ((cur_map->rport == 0) || (uip_conn->rport == HTONS(cur_map->rport)))))
 			{
 				cur_map->an_appcall();
+				break;
 			}
 		}
 		cur_map++;
