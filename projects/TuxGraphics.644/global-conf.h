@@ -17,6 +17,7 @@
 #define led_blink()     PORTB ^= (1<<PB1)
 #endif
 
+#define CONSOLE_SPEED_9600 80
 
 //Define frequency
 #define F_CPU 12500000UL

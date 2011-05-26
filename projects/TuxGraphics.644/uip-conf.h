@@ -90,7 +90,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_STATISTICS      0
+#define UIP_CONF_STATISTICS      1
 
 /**
  * Broadcast support.

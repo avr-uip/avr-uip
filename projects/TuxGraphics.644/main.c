@@ -6,6 +6,8 @@
 
 #include "timer.h"
 
+//#include "usart.h"
+
 #include "global-conf.h"
 #include "uip_arp.h"
 #include "network.h"
@@ -63,7 +65,7 @@ int main(void)
 
 	clock_init();
 
-	timer_set(&periodic_timer, CLOCK_SECOND / 2);
+	timer_set(&periodic_timer, CLOCK_SECOND);
 	timer_set(&arp_timer, CLOCK_SECOND * 10);
 
 #ifdef DHCP_DEBUG
@@ -127,11 +129,21 @@ int main(void)
             uip_setnetmask(ipaddr);
         }
     }
+/*	
+	USART_init(CONSOLE_SPEED_9600);
+
+	USART_transmit('A');
+	USART_transmit('B');
+	USART_transmit('C');
+	USART_transmit('D');
+
+	sendString("Hello out there\n\r");
+*/
 
     // start up the webserver
     httpd_init();
 	//simple_httpd_init();
-	telnetd_init();
+	//telnetd_init();
 
 
 	while(1){
