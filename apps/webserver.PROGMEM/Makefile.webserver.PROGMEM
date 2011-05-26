@@ -23,4 +23,6 @@ HTTPD_DIR=$(strip ${APPSDIR}/webserver.PROGMEM)
 all ::
 	cd ${HTTPD_DIR} && perl makefsdata ${HTTPD_FS_DIR}
 
+load :: all
+
 endif # end - ifdef HTTPD_FS_DIRNAME
