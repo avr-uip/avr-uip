@@ -49,7 +49,7 @@ void USART1_transmit(uint8_t data) {
 
 
 
-void USART0_transmit_string(const unsigned char* data) {
+void USART0_transmit_string(const char* data) {
 	while(*data) {
 		while ( !( UCSR0A & (1<<UDRE0)) )
 		;
@@ -59,7 +59,7 @@ void USART0_transmit_string(const unsigned char* data) {
 }
 
 
-void USART1_transmit_string(const unsigned char* data) {
+void USART1_transmit_string(const char* data) {
 	while(*data) {
 		while ( !( UCSR1A & (1<<UDRE1)) )
 		;

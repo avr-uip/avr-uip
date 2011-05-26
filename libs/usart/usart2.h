@@ -59,7 +59,7 @@ void USART1_init(uint16_t baudval);
  *			   Uses polling, so waits for transmit buffer to be empty
  *
  */
-void USART0_transmit_string(const unsigned char* data);
+void USART0_transmit_string(const char* data);
 
 
 /**
@@ -74,7 +74,7 @@ void USART0_transmit_string(const unsigned char* data);
  *			   Uses polling, so waits for transmit buffer to be empty
  *
  */
-void USART1_transmit_string(const unsigned char* data);
+void USART1_transmit_string(const char* data);
 
 
 

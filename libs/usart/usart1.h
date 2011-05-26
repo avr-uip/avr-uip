@@ -34,7 +34,8 @@ void USART_init(uint16_t baudval);
  *			   Uses polling, so waits for transmit buffer to be empty
  *
  */
-inline void USART_transmit_string(const unsigned char* data);
+void USART_transmit_string(const char* data);
+//inline void USART_transmit_string(const unsigned char* data);
 
 // define a alias
 #define sendString(astring) USART_transmit_string(astring)

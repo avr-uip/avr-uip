@@ -31,7 +31,7 @@ void USART_transmit(uint8_t data ) {
 
 
 // Transmit a string
-void USART_transmit_string(const unsigned char* data) {
+void USART_transmit_string(const char* data) {
 	while(*data) {
 		while ( !( UCSR0A & (1<<UDRE0)) )
 		;
