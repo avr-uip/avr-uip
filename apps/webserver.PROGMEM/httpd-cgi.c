@@ -96,7 +96,7 @@ HTTPD_CGI_CALL(getsetvalue_set, "getset_p.shtml", getsetvalue_in);
 
 #if defined ENABLE_CGI_TCP_CONNECTIONS
 #include "cgi-code/tcp.c"
-HTTPD_CGI_CALL(tcp, "tcp-connections", tcp_stats);
+HTTPD_CGI_CALL(tcp_connections, "tcp_connections", tcp_stats);
 #else
 #define ENABLE_CGI_TCP_CONNECTIONS
 #endif
@@ -107,7 +107,7 @@ ENABLE_CGI_NET_STATS_LIST
 ENABLE_CGI_MYCGI_LIST
 ENABLE_CGI_HELLO_LIST
 ENABLE_CGI_GET_SET_VALUE_LIST
-ENABLE_CGI_TCP_CONNECTIONS
+ENABLE_CGI_TCP_CONNECTIONS_LIST
     NULL };
 
 /*---------------------------------------------------------------------------*/
