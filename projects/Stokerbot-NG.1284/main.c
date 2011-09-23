@@ -45,7 +45,7 @@ uint8_t systemID[8];
 uint8_t mymac[6] = {0x56,0x55,0x58,0x10,0x00,0x29};
 
 uint8_t gwip[4] = {192,168,1,1};
-uint8_t myip[4] = {192,168,1,67};
+uint8_t myip[4] = {192,168,1,99};
 uint8_t netmask[]={255,255,255,0};
 uint8_t dnsip[]={8,8,8,8}; // the google public DNS, don't change unless there is a real need
 

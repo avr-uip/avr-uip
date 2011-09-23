@@ -17,7 +17,7 @@
 // - uncomment to turn on param support for http GET requests in the web server
 #define HTTP_GET_PARAM_SUPPORT
 // - the max amount of data which may be posted or param in get (bytes)
-#define MAX_PARAM_DATA 1400
+#define MAX_PARAM_DATA 800
 //#define HTTPD_MAX_CONNECTIONS 3
 #include "webserver.h"
 /////////////////////////

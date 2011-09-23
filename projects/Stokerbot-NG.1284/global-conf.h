@@ -37,15 +37,15 @@
 #define USE_DHCP 0
 #define UIP_IPADDR0 192
 #define UIP_IPADDR1 168
-#define UIP_IPADDR2 2
-#define UIP_IPADDR3 77
+#define UIP_IPADDR2 1
+#define UIP_IPADDR3 99
 #define UIP_NETMASK0 255
 #define UIP_NETMASK1 255
 #define UIP_NETMASK2 255
 #define UIP_NETMASK3 0
 #define UIP_DRIPADDR0 192
 #define UIP_DRIPADDR1 168
-#define UIP_DRIPADDR2 2
+#define UIP_DRIPADDR2 1
 #define UIP_DRIPADDR3 1
 
 
@@ -68,6 +68,7 @@
 #define ENC28J60_CONTROL_PORT	PORTB
 #define ENC28J60_CONTROL_DDR	DDRB
 
+#define UIP_REASSEMBLY 1
 
 //Include uip.h gives all the uip configurations in uip-conf.h
 #include "uip.h"
