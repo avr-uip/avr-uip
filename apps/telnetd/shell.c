@@ -31,6 +31,15 @@
  * $Id: shell.c,v 1.1 2006/06/07 09:43:54 adam Exp $
  *
  */
+#include "global-conf.h"
+
+#if TELNETD_TIME_CMD
+#include "ds1302.h"
+#endif
+
+#ifdef NETWORK_CMD
+#include "net_conf.h"
+#endif 
 
 #include "shell.h"
 
@@ -41,7 +50,9 @@ struct ptentry {
   void (* pfunc)(char *str);
 };
 
+#ifndef SHELL_PROMPT
 #define SHELL_PROMPT "uIP 1.0> "
+#endif
 
 /*---------------------------------------------------------------------------*/
 static void
@@ -57,6 +68,7 @@ parse(register char *str, struct ptentry *t)
   p->pfunc(str);
 }
 /*---------------------------------------------------------------------------*/
+#if 0  // inttostr not used anywhere
 static void
 inttostr(register char *str, unsigned int i)
 {
@@ -72,13 +84,122 @@ inttostr(register char *str, unsigned int i)
   str[3] = ' ';
   str[4] = 0;
 }
+#endif  // inttostr not used anywhere
+
+#ifdef TELNETD_TIME_CMD
+static void
+settime(char *str)
+{
+	uint8_t timestore_write[8] = {0x00,0x38,0x10,0x10,0x11,0x04,0x10,0};
+	send_time_to_rtc(timestore_write);
+	shell_output("time set", "");
+}
+/*---------------------------------------------------------------------------*/
+static void
+isotime(char *str)
+{
+  uint8_t timestore_read[7];
+  uint8_t iso_timestore[16];
+
+  read_time(timestore_read);
+  iso_time(timestore_read, iso_timestore);
+/*  iso_timestore[0] = 'a' + timestore_read[0];
+  iso_timestore[1] = 'a' + timestore_read[1];
+  iso_timestore[2] = 'a' + timestore_read[2];
+  iso_timestore[3] = 'a' + timestore_read[3];
+  iso_timestore[4] = '\0';
+*/
+  shell_output(iso_timestore, "");
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+#ifdef NETWORK_CMD
+#define DSTR_BUF 25
+static void
+shell_network(char *str)
+{
+	char *pos = str + sizeof("network");
+	uint8_t is_error = 0;
+	char dstr[DSTR_BUF];
+
+	shell_output("you said:", pos);
+
+	if (strncmp("set ", pos, 4) == 0)
+	{
+        pos += 4;
+		if (strncmp("ip ", pos, 3) == 0)
+		{
+        	pos += 3;
+			is_error = net_conf_set_ip_string(pos);
+		}
+		else if (strncmp("gw ", pos, 3) == 0)
+		{
+        	pos += 3;
+			is_error = net_conf_set_gw_string(pos);
+		}
+		else if (strncmp("nm ", pos, 3) == 0)
+		{
+        	pos += 3;
+			is_error = net_conf_set_nm_string(pos);
+		}
+		else if (strncmp("dhcp ", pos, 5) == 0)
+		{
+        	pos += 5;
+			is_error = net_conf_set_dhcpc_string(pos);
+		}
+		else
+		{
+			shell_output("unknown set operation: ", pos);
+		}
+	}
+	else if (strncmp("show", pos, 4) == 0)
+	{
+        pos += 5;
+		net_conf_get_mac_string(dstr, DSTR_BUF);
+		shell_output("MAC: ", dstr);
+		net_conf_get_ip_string(dstr, DSTR_BUF);
+		shell_output("IP: ", dstr);
+		net_conf_get_nm_string(dstr, DSTR_BUF);
+		shell_output("NM: ", dstr);
+		net_conf_get_gw_string(dstr, DSTR_BUF);
+		shell_output("GW: ", dstr);
+	}
+	else if (strncmp("load", pos, 4) == 0)
+	{
+		net_conf_load();
+	}
+	else if (strncmp("save", pos, 4) == 0)
+	{
+		net_conf_save();
+	}
+	else
+	{
+		shell_output("options: show, set, load, save","");
+	}
+}
+#endif
 /*---------------------------------------------------------------------------*/
 static void
 help(char *str)
 {
+  // TEXT HERE CAN ONLY BE 40 chars / output! based on telnetd.h 
   shell_output("Available commands:", "");
-  shell_output("stats   - show network statistics", "");
-  shell_output("conn    - show TCP connections", "");
+#ifdef TELNETD_TIME_CMD
+  shell_output("isotime - sys time, iso format", "");
+  shell_output("settime - set sys time", "");
+  shell_output("gettime - get sys time", "");
+  shell_output("rtcisotime - show RTC time, iso format", "");
+  shell_output("rtcsettime - set the current RTC time", "");
+  shell_output("rtcgettime - get the current RTC time", "");
+  shell_output("rtctosys   - copy RTC time to sys", "");
+  shell_output("systortc   - copy sys time to RTC", "");
+#endif
+#ifdef NETWORK_CMD
+  shell_output("network - get/set network settings", "");
+#endif
+//  shell_output("stats   - show network statistics", "");
+//  shell_output("conn    - show TCP connections", "");
   shell_output("help, ? - show help", "");
   shell_output("exit    - exit shell", "");
 }
@@ -88,6 +209,7 @@ unknown(char *str)
 {
   if(strlen(str) > 0) {
     shell_output("Unknown command: ", str);
+	*str = 0;
   }
 }
 /*---------------------------------------------------------------------------*/
@@ -97,6 +219,13 @@ static struct ptentry parsetab[] =
    {"help", help},
    {"exit", shell_quit},
    {"?", help},
+#ifdef TELNETD_TIME_CMD
+   {"time", isotime},
+   {"settime", settime},
+#endif
+#ifdef NETWORK_CMD
+   {"network", shell_network},
+#endif
 
    /* Default action */
    {NULL, unknown}};
