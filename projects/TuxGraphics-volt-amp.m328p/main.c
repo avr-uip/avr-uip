@@ -15,28 +15,8 @@
 
 #include "net_conf.h"
 
-//#include "usart.h"
-//#include "uart.h"
-
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
-#ifdef PORTB1
-//Led on tuxgraphics board
-#define led_conf()      DDRB |= (1<<DDB1)
-#define led_low()       PORTB |= (1<<PORTB1)
-#define led_high()      PORTB &= ~(1<<PORTB1)
-#define led_blink()     PORTB ^= (1<<PORTB1)
-#else
-//Led on tuxgraphics board
-#define led_conf()      DDRB |= (1<<DDB1)
-#define led_low()       PORTB |= (1<<PB1)
-#define led_high()      PORTB &= ~(1<<PB1)
-#define led_blink()     PORTB ^= (1<<PB1)
-#endif
-
-
-
-//EEPROM parameters (TCP/IP parameters)
 
 
 int main(void)
@@ -68,30 +48,12 @@ int main(void)
 	// load the network configs from eeprom
 	net_conf_init();
 
-    // start up the webserver
-    //httpd_init();
-	//simple_httpd_init();
+    // start telnet server
 	telnetd_init();
 
-//	usart_init(CONSOLE_SPEED_9600);
-//	usart_redirect_stdout();
-//
-//	printf("\nThis is a test... ");
-
-/*
-	USART_init(CONSOLE_SPEED_9600);
-	USART_transmit('A');
-	USART_transmit('B');
-	USART_transmit('C');
-	USART_transmit('D');
-
-	sendString("Hello out there\n\r");
-*/
-led_high();
 
 	while(1){
 		uip_len = network_read();
-
 
 		if(uip_len > 0) {
 			if(BUF->type == htons(UIP_ETHTYPE_IP)){
@@ -135,7 +97,6 @@ led_high();
 				uip_arp_timer();
 			}
 		}
-/// 		while(network_sending()) {asm("nop");}; //wait untill packet is sent away
 	}
 	return 0;
 }

@@ -123,7 +123,6 @@ shell_network(char *str)
 	uint8_t is_error = 0;
 	char dstr[DSTR_BUF];
 
-	shell_output("you said:", pos);
 
 	if (strncmp("set ", pos, 4) == 0)
 	{

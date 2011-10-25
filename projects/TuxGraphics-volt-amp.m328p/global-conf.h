@@ -50,4 +50,20 @@
 //Include uip.h gives all the uip configurations in uip-conf.h
 #include "uip.h"
 
+
+#ifdef PORTB1
+//Led on tuxgraphics board
+#define led_conf()      DDRB |= (1<<DDB1)
+#define led_low()       PORTB |= (1<<PORTB1)
+#define led_high()      PORTB &= ~(1<<PORTB1)
+#define led_blink()     PORTB ^= (1<<PORTB1)
+#else
+//Led on tuxgraphics board
+#define led_conf()      DDRB |= (1<<DDB1)
+#define led_low()       PORTB |= (1<<PB1)
+#define led_high()      PORTB &= ~(1<<PB1)
+#define led_blink()     PORTB ^= (1<<PB1)
+#endif
+
+
 #endif /*__GLOBAL_CONF_H__*/
