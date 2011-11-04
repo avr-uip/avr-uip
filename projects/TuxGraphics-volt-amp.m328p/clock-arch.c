@@ -8,6 +8,9 @@
 
 #include "clock-arch.h"
 
+//http://www.protostack.com/blog/2010/09/timer-interrupts-on-an-atmega168/
+
+
 //Counted time
 clock_time_t clock_datetime = 0;
 

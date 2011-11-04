@@ -8,6 +8,7 @@
 //#include "simple-httpd.h"
 #define NETWORK_CMD 1
 #include "telnetd.h"
+#include "udpds.h"
 //#include "webserver.h"
 //#include "dhcpc.h"
 //#include "resolv.h"
