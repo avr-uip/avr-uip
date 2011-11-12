@@ -175,6 +175,7 @@ ifneq ($(MAKECMDGOALS),clean)
 -include $(addprefix $(OBJECTDIR)/,$(UIP_SOURCES:.c=.d) \
                                    $(APP_SOURCES:.c=.d) \
                                    $(LIB_SOURCES:.c=.d) \
+								   $($(NAME)_SOURCES:.c=.d) \
                                    $(DEV_SOURCES:.c=.d))
 endif
 
