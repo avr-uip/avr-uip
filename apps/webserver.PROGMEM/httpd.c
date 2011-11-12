@@ -520,6 +520,7 @@ handle_connection(struct httpd_state *s)
   }
 }
 
+#if PORT_APP_MAPPER
 int8_t alloc_state(void)
 {
 	int8_t found_state = -1;
@@ -536,6 +537,7 @@ int8_t alloc_state(void)
 								
 	return (found_state);
 }
+#endif
 
 /*---------------------------------------------------------------------------*/
 void
