@@ -28,7 +28,7 @@ DEVS	= enc28j60 #The rest are determined by makefiles for apps
 #LIBS	= #Determined by makefiles for apps or drivers
 #LIBS += misc 1wire analog eeprom 
 #LIBS += usart
-LIBS += 
+LIBS += adc
 
 #Project specific files
 $(NAME)_SOURCES = main.c clock-arch.c

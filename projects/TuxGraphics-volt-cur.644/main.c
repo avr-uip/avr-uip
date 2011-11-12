@@ -16,6 +16,7 @@
 #include <string.h>
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
+#include "adc.h"
 
 
 //EEPROM parameters (TCP/IP parameters)
@@ -44,45 +45,7 @@ static struct uip_eth_addr  my_eth_addr = { .addr = {UIP_ETHADDR0,UIP_ETHADDR1,U
 
 struct timer dhcp_timer;
 
-volatile uint16_t adResult;
 volatile uint16_t volt, cur;
-//volatile uint16_t refvcc;
-
-void adc_init(void)
-{
-	ADCSRA |= ((1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0));    //16Mhz/128 = 125Khz the ADC reference clock
-	ADMUX |= (1<<REFS0);                //Voltage reference from Avcc (5v)
-	ADCSRA |= (1<<ADEN);                //Turn on ADC
-	ADCSRA |= (1<<ADSC);                //Do an initial conversion because this one is the slowest and to ensure that everything is up and running
-}
-
-#if 0
-void refvcc_adc(void)
-{
-	ADCSRA |= ((1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0));    //16Mhz/128 = 125Khz the ADC reference clock
-	ADMUX = 0xE; //Set the Band Gap voltage as the ADC input
-	//ADMUX &= ((0<<REFS1) | (0<<REFS0));
-	//ADMUX = (0xE | (1<<REFS0)); //Set the Band Gap voltage as the ADC input
-	ADCSRA |= (1<<ADEN); //Turn on ADC
-	ADCSRA |= (1<<ADSC);                //Starts a new conversion
-	while(ADCSRA & (1<<ADSC));            //Wait until the conversion is done
-	refvcc = ADCW;
-	ADCSRA |= (1<<ADSC);                //Starts a new conversion
-	while(ADCSRA & (1<<ADSC));            //Wait until the conversion is done
-	refvcc = ADCW;
-	//refvcc = (1.1 * 255) / refvcc;
-}
-#endif
-
-uint16_t read_adc(uint8_t channel)
-{
-	ADMUX &= 0xF0;                    //Clear the older channel that was read
-	ADMUX |= channel;                //Defines the new ADC channel to be read
-	ADCSRA |= (1<<ADSC);                //Starts a new conversion
-	while(ADCSRA & (1<<ADSC));            //Wait until the conversion is done
-	return ADCW;                    //Returns the ADC value of the chosen channel
-}
-
 
 int main(void)
 {
@@ -187,18 +150,14 @@ _enable_dhcp = 0;
     uip_ipaddr(&ipaddr, 192,168,2,99);
 	udpds_conf(ipaddr, 33, 8);
 
-adc_init();
-
-	adResult = 0;
-
+	adc_init();
 
 	while(1){
-
-adResult = read_adc(0);
-volt = ((((float)adResult) / 1024) * 3300 * 2);
-
-adResult = read_adc(1);
-cur = adResult;
+		volt = read_adc(0);
+		volt = ((((float)volt) / 1024) * 3300 * 2);
+		cur = (volt / 10);
+		//adResult = read_adc(1);
+		//cur = adResult;
 //cur = (((float)adResult) / 1024) * 484;
 
 		uip_len = network_read();
@@ -317,10 +276,5 @@ void dhcpc_configured(const struct dhcpc_state *s)
 /*---------------------------------------------------------------------------*/
 int udpds_set_payload(void)
 {
-  led_blink();
   return (1 + sprintf((char *)uip_appdata,"volt: %d cur: %d\n", volt, cur));
-  //return (1 + sprintf((char *)uip_appdata,"adc: %d volt: %d.%04d", adResult, vtop, vbot));
-//  sprintf((char *)uip_appdata,"adc: %d  v: %d ", adResult, 0);
-  //sprintf((char *)uip_appdata,"adc: %f  v: %f ", adResult, voltage);
-//  return (16);
 }

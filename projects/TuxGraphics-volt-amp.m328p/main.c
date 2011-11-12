@@ -18,36 +18,12 @@
 #include <string.h>
 
 #include "net_conf.h"
+#include "adc.h"
 
-#include "pt.h"
 
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 
-
-static struct pt blink_thread;
-static struct timer blink_timer;
-/* === PROTOTHREADS  ===*/
-/* ---  Blink protothread ---*/
-static 
-PT_THREAD(blink(void))
-{
-	PT_BEGIN(&blink_thread);
-
-		led_high();
-		//printf("led ON\n");
-		timer_set(&blink_timer, CLOCK_CONF_SECOND);
-		PT_WAIT_UNTIL(&blink_thread, 
-				timer_expired(&blink_timer));
-
-		led_low();
-		//printf("Led OFF\n");
-		timer_set(&blink_timer, CLOCK_CONF_SECOND);
-		PT_WAIT_UNTIL(&blink_thread,
-				timer_expired(&blink_timer));
-
-	PT_END(&blink_thread);
-}
-
+volatile uint16_t volt, cur;
 
 
 int main(void)
@@ -90,10 +66,16 @@ int main(void)
 	uip_ipaddr(&ipaddr, 192,168,2,99);
 	udpds_conf(ipaddr, 33, 8);
 
-led_conf();
+
+	adc_init();
+
 
 	while(1){
-//		blink();
+
+		volt = read_adc(0);
+		volt = ((((float)volt) / 1024) * 3300 * 2);
+		cur = (volt / 10);
+
 		uip_len = network_read();
 
 		if(uip_len > 0) {
@@ -155,9 +137,7 @@ void uip_log(char *m)
 
 int udpds_set_payload(void)
 {
-  led_blink();
-  memcpy((char *)uip_appdata, "hello out there", sizeof("hello out there"));
-  return (sizeof("hello out there")); 
+  return (1 + sprintf((char *)uip_appdata,"volt: %d cur: %d\n", volt, cur));
 }
 
 
