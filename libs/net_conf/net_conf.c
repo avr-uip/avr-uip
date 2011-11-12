@@ -57,12 +57,7 @@ static struct uip_eth_addr  my_eth_addr = { .addr = {UIP_ETHADDR0,UIP_ETHADDR1,
 int net_conf_init(void)
 {
 	uip_ipaddr_t ipaddr;
-led_conf();
-led_low();
 	net_conf_load();
-
-// debug
-net_conf_enable_dhcp = 0;
 
     if ((net_conf_enable_dhcp != 1) &&
 		(net_conf_enable_dhcp != 0))
