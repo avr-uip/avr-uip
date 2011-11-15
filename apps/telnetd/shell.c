@@ -129,25 +129,25 @@ shell_network(char *str)
 	char dstr[DSTR_BUF];
 
 
-	if (strncmp("set ", pos, 4) == 0)
+	if (strncmp_P(pos, PSTR("set "), 4) == 0)
 	{
         pos += 4;
-		if (strncmp("ip ", pos, 3) == 0)
+		if (strncmp_P(pos, PSTR("ip "), 3) == 0)
 		{
         	pos += 3;
 			is_error = net_conf_set_ip_string(pos);
 		}
-		else if (strncmp("gw ", pos, 3) == 0)
+		else if (strncmp_P(pos, PSTR("gw "), 3) == 0)
 		{
         	pos += 3;
 			is_error = net_conf_set_gw_string(pos);
 		}
-		else if (strncmp("nm ", pos, 3) == 0)
+		else if (strncmp_P(pos, PSTR("nm "), 3) == 0)
 		{
         	pos += 3;
 			is_error = net_conf_set_nm_string(pos);
 		}
-		else if (strncmp("dhcp ", pos, 5) == 0)
+		else if (strncmp_P(pos, PSTR("dhcp "), 5) == 0)
 		{
         	pos += 5;
 			is_error = net_conf_set_dhcpc_string(pos);
@@ -157,7 +157,7 @@ shell_network(char *str)
 			shell_output("unknown set operation: ", pos);
 		}
 	}
-	else if (strncmp("show", pos, 4) == 0)
+	else if (strncmp_P(pos, PSTR("show"), 4) == 0)
 	{
         pos += 5;
 		net_conf_get_mac_string(dstr, DSTR_BUF);
@@ -169,11 +169,11 @@ shell_network(char *str)
 		net_conf_get_gw_string(dstr, DSTR_BUF);
 		shell_output("GW: ", dstr);
 	}
-	else if (strncmp("load", pos, 4) == 0)
+	else if (strncmp_P(pos, PSTR("load"), 4) == 0)
 	{
 		net_conf_load();
 	}
-	else if (strncmp("save", pos, 4) == 0)
+	else if (strncmp_P(pos, PSTR("save"), 4) == 0)
 	{
 		net_conf_save();
 	}
@@ -189,7 +189,18 @@ shell_network(char *str)
 static void
 shell_udpds(char *str)
 {
+	char *pos = str + sizeof("udpds");
+  
+	if (strncmp_P(pos, PSTR("set "), 4) == 0)
+	{
+	}
+	else if (strncmp(pos, PSTR("enable"), 6) == 0)
+	{
 
+	}
+	else if (strncmp(pos, PSTR("disable"), 7) == 0)
+	{
+	}
 }
 #endif
 
