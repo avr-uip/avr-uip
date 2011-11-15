@@ -41,6 +41,11 @@
 #include "net_conf.h"
 #endif 
 
+#ifdef UDPDS_CMD
+#include "udpds.h"
+
+#endif
+
 #include "shell.h"
 
 #include <string.h>
@@ -174,33 +179,46 @@ shell_network(char *str)
 	}
 	else
 	{
-		shell_output("options: show, set, load, save","");
+		shell_output_P(PSTR("options: show, set, load, save"),PSTR(""));
 	}
 }
 #endif
+
+
+#ifdef UDPDS_CMD
+static void
+shell_udpds(char *str)
+{
+
+}
+#endif
+
 /*---------------------------------------------------------------------------*/
 static void
 help(char *str)
 {
   // TEXT HERE CAN ONLY BE 40 chars / output! based on telnetd.h 
-  shell_output("Available commands:", "");
+  shell_output_P(PSTR("Available commands:"), PSTR(""));
 #ifdef TELNETD_TIME_CMD
-  shell_output("isotime - sys time, iso format", "");
-  shell_output("settime - set sys time", "");
-  shell_output("gettime - get sys time", "");
-  shell_output("rtcisotime - show RTC time, iso format", "");
-  shell_output("rtcsettime - set the current RTC time", "");
-  shell_output("rtcgettime - get the current RTC time", "");
-  shell_output("rtctosys   - copy RTC time to sys", "");
-  shell_output("systortc   - copy sys time to RTC", "");
+  shell_output_P(PSTR("isotime - sys time, iso format"), PSTR(""));
+  shell_output_P(PSTR("settime - set sys time"), PSTR(""));
+  shell_output_P(PSTR("gettime - get sys time"), PSTR(""));
+  shell_output_P(PSTR("rtcisotime - show RTC time, iso format"), PSTR(""));
+  shell_output_P(PSTR("rtcsettime - set the current RTC time"), PSTR(""));
+  shell_output_P(PSTR("rtcgettime - get the current RTC time"), PSTR(""));
+  shell_output_P(PSTR("rtctosys   - copy RTC time to sys"), PSTR(""));
+  shell_output_P(PSTR("systortc   - copy sys time to RTC"), PSTR(""));
 #endif
 #ifdef NETWORK_CMD
-  shell_output("network - get/set network settings", "");
+  shell_output_P(PSTR("network - get/set network settings"), PSTR(""));
+#endif
+#ifdef UDPDS_CMD
+  shell_output_P(PSTR("udpds - set/enable/disable"),PSTR(""));
 #endif
 //  shell_output("stats   - show network statistics", "");
 //  shell_output("conn    - show TCP connections", "");
-  shell_output("help, ? - show help", "");
-  shell_output("exit    - exit shell", "");
+  shell_output_P(PSTR("help, ? - show help"), PSTR(""));
+  shell_output_P(PSTR("exit    - exit shell"), PSTR(""));
 }
 /*---------------------------------------------------------------------------*/
 static void
@@ -225,7 +243,9 @@ static struct ptentry parsetab[] =
 #ifdef NETWORK_CMD
    {"network", shell_network},
 #endif
-
+#ifdef UDPDS_CMD
+   {"udpds", shell_udpds},
+#endif
    /* Default action */
    {NULL, unknown}};
 /*---------------------------------------------------------------------------*/
@@ -237,8 +257,8 @@ shell_init(void)
 void
 shell_start(void)
 {
-  shell_output("uIP command shell", "");
-  shell_output("Type '?' and return for help", "");
+  shell_output_P(PSTR("uIP command shell"), PSTR(""));
+  shell_output_P(PSTR("Type '?' and return for help"), PSTR(""));
   shell_prompt(SHELL_PROMPT);
 }
 /*---------------------------------------------------------------------------*/
