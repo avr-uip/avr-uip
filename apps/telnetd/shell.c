@@ -194,11 +194,14 @@ shell_udpds(char *str)
 	if (strncmp_P(pos, PSTR("set "), 4) == 0)
 	{
 	}
-	else if (strncmp(pos, PSTR("enable"), 6) == 0)
+	else if (strncmp_P(pos, PSTR("show"), 4) == 0)
+	{
+	}
+	else if (strncmp_P(pos, PSTR("enable"), 6) == 0)
 	{
 
 	}
-	else if (strncmp(pos, PSTR("disable"), 7) == 0)
+	else if (strncmp_P(pos, PSTR("disable"), 7) == 0)
 	{
 	}
 }
