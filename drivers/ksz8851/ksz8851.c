@@ -243,7 +243,7 @@ ksz8851Init(void)
 	/* Read device chip ID */
 	dev_id = ksz8851_regrd(REG_CHIP_ID);
 
-	if (dev_id != CHIP_ID_8851_16) {
+	if ((dev_id & 0xFFF0) != CHIP_ID_8851_16) {
 	   printf("Expected Device ID 0x%x, got 0x%x\n",
 		  CHIP_ID_8851_16, dev_id);
 	}
