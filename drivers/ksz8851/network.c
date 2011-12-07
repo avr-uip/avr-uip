@@ -73,7 +73,7 @@ network_get_MAC(uint8_t* macaddr)
     macaddr[2] = temp >> 8;
 
     /* Read QMU MAC address (high) */
-    ksz8851_regrd(REG_MAC_ADDR_45);
+    temp = ksz8851_regrd(REG_MAC_ADDR_45);
     macaddr[1] = temp & 0xff;
     macaddr[0] = temp >>  8;
 }
