@@ -5,18 +5,31 @@
 
 unsigned int
 network_read(void) {
-	uint16_t len;
+    uint16_t len, totallen, i;
+    char dummy;
 
-	len = ksz8851BeginPacketRetrieve();
+    len = ksz8851BeginPacketRetrieve();
+    totallen = len;
 
-	if (len == 0) {
-	    return 0;
-	}
+    if (len == 0) {
+        return 0;
+    }
 
-	ksz8851RetrievePacketData((uint8_t *)uip_buf, len);
-	ksz8851EndPacketRetrieve();
+    // Avoid SCADA attack - do not overflow
+    if (len > UIP_BUFSIZE) {
+        len = UIP_BUFSIZE;
+    }
 
-	return len;
+    ksz8851RetrievePacketData((uint8_t *)uip_buf, len);
+
+    // fetch reminder of the data to prevent stalling
+    for (i=len; i<totallen; i++) {
+        ksz8851RetrievePacketData((uint8_t *)&dummy, 1);
+    }
+
+    ksz8851EndPacketRetrieve();
+
+    return len;
 }
 
 void
