@@ -31,6 +31,24 @@
 #define UIP_DRIPADDR2 2
 #define UIP_DRIPADDR3 1
 
+#include "uip.h"
+//
+// ** do this include instead of all of uip.h **
+//
+#if 0
+#include "uipopt.h"
+typedef u16_t uip_ip4addr_t[2];
+typedef u16_t uip_ip6addr_t[8];
+#if UIP_CONF_IPV6
+typedef uip_ip6addr_t uip_ipaddr_t;
+#else /* UIP_CONF_IPV6 */
+typedef uip_ip4addr_t uip_ipaddr_t;
+#endif /* UIP_CONF_IPV6 */
+#endif
+//
+// ** do this include instead of all of uip.h **
+//
+
 
 // function protos
 int net_conf_init(void);
@@ -39,16 +57,19 @@ uint8_t network_string_to_byte_array(char *net_string,
 									 uint8_t byte_array_len);
 uint8_t *net_conf_get_ip (void);
 void net_conf_set_ip (uint8_t *new_ip);
+void net_conf_set_ip_ipaddr(const uip_ipaddr_t addr);
 int8_t net_conf_get_ip_string (char* ip_string, int8_t ip_string_len);
 uint8_t net_conf_set_ip_string (char *ip_string);
 
 uint8_t *net_conf_get_gw (void);
 void net_conf_set_gw (uint8_t* new_gw);
+void net_conf_set_gw_ipaddr(const uip_ipaddr_t addr);
 int8_t net_conf_get_gw_string (char* gw_string, int8_t gw_string_len);
 uint8_t net_conf_set_gw_string (char* gw_string);
 
 uint8_t *net_conf_get_nm (void);
 void net_conf_set_nm (uint8_t *new_nm);
+void net_conf_set_nm_ipaddr(const uip_ipaddr_t addr);
 int8_t net_conf_get_nm_string (char* nm_string, int8_t nm_string_len);
 uint8_t net_conf_set_nm_string (char *nm_string);
 

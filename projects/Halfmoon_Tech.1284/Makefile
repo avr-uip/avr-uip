@@ -8,10 +8,10 @@ NAME    = halfmoon_tech
 
 #Compiled apps
 #APPS    = webserver.PROGMEM port_app_mapper
-APPS = telnetd dhcpc
+APPS += telnetd dhcpc
 
 #Compiled drivers
-DEVS	= enc28j60 #The rest are determined by makefiles for apps
+DEVS	+= enc28j60.tux #The rest are determined by makefiles for apps
 
 #Compiled libs
 #LIBS	+= misc 1wire analog eeprom uart 

@@ -33,7 +33,10 @@ int main(void)
 
 led_conf();
 
-	network_init();
+
+        CLKPR=(1<<CLKPCE); // change enable
+        CLKPR=0; // "no pre-scaler"
+        _delay_loop_1(0); // 60us
 
 /*
 	CLKPR = (1<<CLKPCE);	//Change prescaler
@@ -58,6 +61,8 @@ led_conf();
 	
     // load the network configs from eeprom
     net_conf_init();
+
+    network_init_mac(net_conf_get_mac());
 
     if (net_conf_is_dhcpc())
     {
@@ -123,14 +128,14 @@ led_conf();
             dhcpc_renew();
             timer_reset(&dhcp_timer);
         }
-else
+/*else
 {
 	_delay_loop_2(50000);
 led_blink();
 	_delay_loop_2(50000);
 	_delay_loop_2(50000);
 	_delay_loop_2(50000);
-}
+}*/
     }
 
     return 0;

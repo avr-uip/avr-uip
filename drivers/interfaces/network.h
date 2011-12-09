@@ -5,8 +5,13 @@
 #ifndef __NETWORK_H__
 #define __NETWORK_H__
 
+#include "avrlibtypes.h"
+
 /*Initialize the network*/
 void network_init(void);
+
+/*Initialize the network with a mac addr*/
+void network_init_mac(u08* macaddr);
 
 /*Read from the network, returns number of read bytes*/
 unsigned int network_read(void);

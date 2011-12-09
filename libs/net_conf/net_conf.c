@@ -12,19 +12,6 @@
 
 #include <ctype.h>
 
-#ifdef PORTB1
-//Led on tuxgraphics board
-#define led_conf()      DDRB |= (1<<DDB1)
-#define led_low()       PORTB |= (1<<PORTB1)
-#define led_high()      PORTB &= ~(1<<PORTB1)
-#define led_blink()     PORTB ^= (1<<PORTB1)
-#else
-//Led on tuxgraphics board
-#define led_conf()      DDRB |= (1<<DDB1)
-#define led_low()       PORTB |= (1<<PB1)
-#define led_high()      PORTB &= ~(1<<PB1)
-#define led_blink()     PORTB ^= (1<<PB1)
-#endif
 
 
 //EEPROM parameters (TCP/IP parameters)
@@ -48,17 +35,23 @@ uint8_t net_conf_eth_addr[6];
 uint8_t net_conf_ip_addr[4];
 uint8_t net_conf_net_mask[4];
 uint8_t net_conf_gateway[4];
+uint8_t net_conf_four_bytes[4];
 
 static struct uip_eth_addr  my_eth_addr = { .addr = {UIP_ETHADDR0,UIP_ETHADDR1,
                                                      UIP_ETHADDR2,UIP_ETHADDR3,
 												     UIP_ETHADDR4,UIP_ETHADDR5}};
-
+bool init_load_done = 0;
 
 int net_conf_init(void)
 {
 	uip_ipaddr_t ipaddr;
-	net_conf_load();
 
+    if (!init_load_done)
+    {
+	net_conf_load();
+    }
+    init_load_done = 1;
+net_conf_enable_dhcp=0;
     if ((net_conf_enable_dhcp != 1) &&
 		(net_conf_enable_dhcp != 0))
     {   // if the setting is invalid, enable by default
@@ -72,7 +65,8 @@ int net_conf_init(void)
     }
 
     // if the mac address in eeprom looks bad, use the defaults
-    if(net_conf_eth_addr[0] == 0xff)
+//    if(net_conf_eth_addr[0] == 0xff)
+    if(1 || net_conf_eth_addr[0] == 0xff)
     {
 		net_conf_eth_addr[0] = UIP_ETHADDR0;
 		net_conf_eth_addr[1] = UIP_ETHADDR1;
@@ -97,7 +91,7 @@ int net_conf_init(void)
     if (!net_conf_enable_dhcp)
     {
         // if the IP looks good in flash, use it
-        if ((net_conf_ip_addr[0] != 255) &&
+        if (0 && (net_conf_ip_addr[0] != 255) &&
 			(net_conf_ip_addr[0] != 0))
         {
             uip_ipaddr(ipaddr, net_conf_ip_addr[0], net_conf_ip_addr[1],
@@ -193,6 +187,20 @@ void net_conf_set_ip (uint8_t *new_ip)
     memcpy(net_conf_ip_addr, new_ip, 4);
 }
 
+void net_conf_ipaddr_to_bytes(const uip_ipaddr_t addr, uint8_t *net_conf_four_bytes)
+{
+    net_conf_four_bytes[0] = 0x00FF & (addr[0]);
+    net_conf_four_bytes[1] = (addr[0]) >> 8;
+    net_conf_four_bytes[2] = 0x00FF & (addr[1]);
+    net_conf_four_bytes[3] = (addr[1]) >> 8;
+}
+
+void net_conf_set_ip_ipaddr(const uip_ipaddr_t addr)
+{
+    net_conf_ipaddr_to_bytes(addr, net_conf_four_bytes);
+    net_conf_set_ip(net_conf_four_bytes);
+}
+
 int8_t net_conf_get_ip_string (char* ip_string, int8_t ip_string_len)
 {
 	return(snprintf(ip_string, ip_string_len, "%d.%d.%d.%d",
@@ -216,6 +224,17 @@ uint8_t *net_conf_get_gw (void)
 void net_conf_set_gw (uint8_t* new_gw)
 {
     memcpy(net_conf_gateway, new_gw, 4);
+}
+
+void net_conf_set_gw_ipaddr(const uip_ipaddr_t addr)
+{
+    net_conf_ipaddr_to_bytes(addr, net_conf_four_bytes);
+/*    net_conf_four_bytes[0] = 0x00FF & (addr[0]);
+    net_conf_four_bytes[1] = (addr[0]) >> 8;
+    net_conf_four_bytes[2] = 0x00FF & (addr[1]);
+    net_conf_four_bytes[3] = (addr[1]) >> 8;
+*/
+    net_conf_set_gw(net_conf_four_bytes);
 }
 
 int8_t net_conf_get_gw_string (char* gw_string, int8_t gw_string_len)
@@ -243,6 +262,17 @@ uint8_t *net_conf_get_nm (void)
 void net_conf_set_nm (uint8_t *new_nm)
 {
     memcpy(net_conf_net_mask, new_nm, 4);
+}
+
+void net_conf_set_nm_ipaddr(const uip_ipaddr_t addr)
+{
+    net_conf_ipaddr_to_bytes(addr, net_conf_four_bytes);
+/*    net_conf_four_bytes[0] = 0x00FF & (addr[0]);
+    net_conf_four_bytes[1] = (addr[0]) >> 8;
+    net_conf_four_bytes[2] = 0x00FF & (addr[1]);
+    net_conf_four_bytes[3] = (addr[1]) >> 8;
+*/
+    net_conf_set_nm(net_conf_four_bytes);
 }
 
 int8_t net_conf_get_nm_string (char* nm_string, int8_t nm_string_len)
