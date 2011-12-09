@@ -75,6 +75,7 @@ led_conf();
 
     // start telnet server
     telnetd_init();
+    httpd_init();
 /*
 	adc_init();
 */
