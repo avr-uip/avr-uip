@@ -51,7 +51,9 @@ int net_conf_init(void)
 	net_conf_load();
     }
     init_load_done = 1;
-net_conf_enable_dhcp=0;
+
+//net_conf_enable_dhcp=0;
+
     if ((net_conf_enable_dhcp != 1) &&
 		(net_conf_enable_dhcp != 0))
     {   // if the setting is invalid, enable by default
@@ -65,8 +67,7 @@ net_conf_enable_dhcp=0;
     }
 
     // if the mac address in eeprom looks bad, use the defaults
-//    if(net_conf_eth_addr[0] == 0xff)
-    if(1 || net_conf_eth_addr[0] == 0xff)
+    if(net_conf_eth_addr[0] == 0xff)
     {
 		net_conf_eth_addr[0] = UIP_ETHADDR0;
 		net_conf_eth_addr[1] = UIP_ETHADDR1;
@@ -91,7 +92,7 @@ net_conf_enable_dhcp=0;
     if (!net_conf_enable_dhcp)
     {
         // if the IP looks good in flash, use it
-        if (0 && (net_conf_ip_addr[0] != 255) &&
+        if ((net_conf_ip_addr[0] != 255) &&
 			(net_conf_ip_addr[0] != 0))
         {
             uip_ipaddr(ipaddr, net_conf_ip_addr[0], net_conf_ip_addr[1],
