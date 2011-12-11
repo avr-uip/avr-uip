@@ -52,6 +52,7 @@ typedef uip_ip4addr_t uip_ipaddr_t;
 
 // function protos
 int net_conf_init(void);
+void net_conf_uip_set(void);
 uint8_t network_string_to_byte_array(char *net_string,
                                      uint8_t byte_array[],
 									 uint8_t byte_array_len);

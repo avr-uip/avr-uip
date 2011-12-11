@@ -42,9 +42,25 @@ static struct uip_eth_addr  my_eth_addr = { .addr = {UIP_ETHADDR0,UIP_ETHADDR1,
 												     UIP_ETHADDR4,UIP_ETHADDR5}};
 bool init_load_done = 0;
 
+void net_conf_uip_set(void)
+{
+    uip_ipaddr_t ipaddr;
+
+    uip_ipaddr(ipaddr, net_conf_ip_addr[0], net_conf_ip_addr[1],
+               net_conf_ip_addr[2], net_conf_ip_addr[3]);
+    uip_sethostaddr(ipaddr);
+    uip_ipaddr(ipaddr, net_conf_gateway[0], net_conf_gateway[1],
+               net_conf_gateway[2], net_conf_gateway[3]);
+    uip_setdraddr(ipaddr);
+    uip_ipaddr(ipaddr, net_conf_net_mask[0], net_conf_net_mask[1],
+               net_conf_net_mask[2], net_conf_net_mask[3]);
+    uip_setnetmask(ipaddr);
+}
+
+
 int net_conf_init(void)
 {
-	uip_ipaddr_t ipaddr;
+    uip_ipaddr_t ipaddr;
 
     if (!init_load_done)
     {
@@ -85,8 +101,6 @@ int net_conf_init(void)
 	my_eth_addr.addr[4] = net_conf_eth_addr[4];
 	my_eth_addr.addr[5] = net_conf_eth_addr[5];
 
-// this is broken for the moment... 
-//	network_set_MAC(net_conf_eth_addr);
 	uip_setethaddr(my_eth_addr);
 
     if (!net_conf_enable_dhcp)
@@ -95,15 +109,7 @@ int net_conf_init(void)
         if ((net_conf_ip_addr[0] != 255) &&
 			(net_conf_ip_addr[0] != 0))
         {
-            uip_ipaddr(ipaddr, net_conf_ip_addr[0], net_conf_ip_addr[1],
-			                   net_conf_ip_addr[2], net_conf_ip_addr[3]);
-            uip_sethostaddr(ipaddr);
-            uip_ipaddr(ipaddr, net_conf_gateway[0], net_conf_gateway[1],
-			                   net_conf_gateway[2], net_conf_gateway[3]);
-            uip_setdraddr(ipaddr);
-            uip_ipaddr(ipaddr, net_conf_net_mask[0], net_conf_net_mask[1],
-			                   net_conf_net_mask[2], net_conf_net_mask[3]);
-            uip_setnetmask(ipaddr);
+            net_conf_uip_set();
         }
         else
         {
