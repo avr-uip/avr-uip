@@ -11,46 +11,31 @@
 //Counted time
 clock_time_t clock_datetime = 0;
 
-volatile uint16_t seconds, tick;
-volatile uint16_t tickS = 1;
 
 //Overflow itnerrupt
 ISR(TIMER1_COMPA_vect)
 {
-	clock_datetime += 1;
-	tick++;
-	
-  if (tickDiff(seconds) >= 500)
-  {
-  	tickS++;
-	  seconds = tick;
-  }	
+    clock_datetime += 1;
 }
 
 //Initialise the clock
-void clock_init(){
-   TCCR1B |= (1 << WGM12) | (1 << CS12); // Configure timer 1 for CTC mode
-   OCR1A   = 125; // Compare value 125
-   TCCR1A |= (1 << CS12); // Start timer at Fcpu/256
+void clock_init()
+{
+    cli(); // stop interrupts while we meddle with the clocks
+
+    TCNT1=0x0000; // reset counter to 0 at start
+    TCCR1B |= (1 << WGM12) | (1 << CS12); // Configure timer 1 for CTC mode
+    OCR1A   = 0xB40; // Compare value  14745600 / 256 = 57600 ( 57600/20 = 2880 = 0xB40)
+    TCCR1A |= (1 << CS12); // Start timer at Fcpu/256
    
-   TIMSK1 |= (1 << OCIE1A); // Enable CTC interrupt
+    TIMSK1 |= (1 << OCIE1A); // Enable CTC interrupt
      
-   sei();
+    sei();
 }
 
 //Return time
-clock_time_t clock_time(){
+clock_time_t clock_time()
+{
 	return clock_datetime;
-}
-
-
-uint16_t tickDiff(uint16_t oldtick)
-{
-	return tick - oldtick;
-}
-
-uint16_t tickDiffS(uint16_t oldtick)
-{
-	return tickS - oldtick;
 }
 

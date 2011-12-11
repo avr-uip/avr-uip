@@ -46,7 +46,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_MAX_LISTENPORTS 2
+#define UIP_CONF_MAX_LISTENPORTS 4
 
 /**
  * uIP buffer size.
@@ -73,7 +73,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_UDP             1
+#define UIP_CONF_UDP             2
 
 /**
  * UDP checksums on or off
@@ -101,7 +101,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_UDP_CONNS		0
+#define UIP_CONF_UDP_CONNS		2
 
 #define UIP_REASSEMBLY 1
 
