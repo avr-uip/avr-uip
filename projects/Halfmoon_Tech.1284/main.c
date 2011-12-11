@@ -155,7 +155,6 @@ void uip_log(char *m)
 void dhcpc_configured(const struct dhcpc_state *s)
 {
 //led_low();
-    // byte swap the network info
     net_conf_set_ip_ipaddr(s->ipaddr);
 
     net_conf_set_nm_ipaddr(s->netmask);
