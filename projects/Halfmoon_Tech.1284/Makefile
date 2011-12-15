@@ -1,17 +1,17 @@
 #Chip choice
 MCU	= atmega1284p
 CHIP	= m1284p
-#F_CPU = 16000000 
 
 #Project name
 NAME    = halfmoon_tech
 
 
-HTTPD_FS_DIRNAME = httpd-fs
+HTTPD_FS_DIRNAME = httpd-fs-halfmoon_tech.1284
 
 #Compiled apps
 APPS    = webserver.PROGMEM port_app_mapper
-APPS += telnetd dhcpc
+APPS += telnetd dhcpc 
+#APPS += resolv
 
 #Compiled drivers
 DEVS	+= enc28j60.tux #The rest are determined by makefiles for apps
