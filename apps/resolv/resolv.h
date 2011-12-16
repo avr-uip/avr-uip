@@ -70,6 +70,15 @@ void resolv_init(void);
 u16_t *resolv_lookup(char *name);
 void resolv_query(char *name);
 
+
+#if defined PORT_APP_MAPPER
+	#define RESOLV_APP_CALL_MAP {resolv_appcall, 0, 53},
+#else
+	#define RESOLV_APP_CALL_MAP
+	#define UIP_UDP_APPCALL resolv_appcall
+	typedef int uip_udp_appstate_t;
+#endif
+
 #endif /* __RESOLV_H__ */
 
 /** @} */
