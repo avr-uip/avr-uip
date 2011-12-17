@@ -130,6 +130,8 @@ static struct namemap names[RESOLV_ENTRIES];
 
 static u8_t seqno;
 
+static u16_t RESOLV_FAIL[2] = {0,1};
+
 static struct uip_udp_conn *resolv_conn = NULL;
 
 
@@ -331,6 +333,7 @@ void
 resolv_appcall(void)
 {
   if(uip_udp_conn->rport == HTONS(53)) {
+sendString("resolv appcall and remote port 53\r\n");
     if(uip_poll()) {
       check_entries();
     }
@@ -405,8 +408,24 @@ resolv_lookup(char *name)
     if(nameptr->state == STATE_DONE &&
        strcmp(name, nameptr->name) == 0) {
       return nameptr->ipaddr;
-    }
+    } else if (nameptr->state != STATE_UNUSED &&
+               strcmp(name, nameptr->name) == 0) {
+      if (nameptr->state == STATE_ERROR) {
+        // failed to resolve this may be a network or other error
+        // just reset the entry for re-use and inform the caller
+        // the next call to resolve the host name will retry 
+        nameptr->state = STATE_UNUSED;
+        return RESOLV_FAIL;
+      } else {
+        // the name is already in the query list but, not resolved
+        return NULL;
+      }
+    } 
   }
+
+  // if the name is not found, start a query
+  resolv_query(name);
+
   return NULL;
 }
 /*---------------------------------------------------------------------------*/
@@ -453,12 +472,22 @@ resolv_init(void)
 {
   static u8_t i;
   
+sendString("resolv INIT\r\n");
   for(i = 0; i < RESOLV_ENTRIES; ++i) {
     names[i].state = STATE_DONE;
   }
 
 }
 /*---------------------------------------------------------------------------*/
+
+#ifndef RESOLV_FOUND_CUSTOM
+// this is a do nothing stub as apps are just going to check again and again
+void resolv_found(char *name, u16_t *ipaddr)
+{
+    // Apps should just poll resolv_lookup(char *name) as it takes time to 
+    // resolve the host name to an IP
+}
+#endif
 
 /** @} */
 /** @} */
