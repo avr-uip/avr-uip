@@ -60,7 +60,7 @@ extern void clock_set_ntptime(struct ntp_time *time);
 
 
 #if defined PORT_APP_MAPPER
-	#define NTPCLIENT_APP_CALL_MAP {dhcpc_appcall, 0, 123},
+	#define NTPCLIENT_APP_CALL_MAP {ntpclient_appcall, 0, 123},
 #else
 	#define NTPCLIENT_APP_CALL_MAP
 	#define UIP_UDP_APPCALL ntpclient_appcall
