@@ -44,9 +44,21 @@
 #ifndef __RESOLV_H__
 #define __RESOLV_H__
 
+//#include "led-conf.h"
+
 //typedef int uip_udp_appstate_t;
 void resolv_appcall(void);
 //#define UIP_UDP_APPCALL resolv_appcall
+
+#define RESOLV_COUNTER_1 1
+
+#ifndef RESOLV_COUNTER_1
+#define RESOLV_COUNTER_1 240 // @ 1 sec / poll call this is 4 minuts
+#endif
+
+#ifndef RESOLV_COUNTER_2
+#define RESOLV_COUNTER_2 30 // @ 1 sec / poll call this is will be 2 hours
+#endif 
 
 #include "uipopt.h"
 

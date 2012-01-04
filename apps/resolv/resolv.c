@@ -174,7 +174,7 @@ check_entries(void)
   static u8_t i;
   static u8_t n;
   register struct namemap *namemapptr;
-  
+
   for(i = 0; i < RESOLV_ENTRIES; ++i) {
     namemapptr = &names[i];
     if(namemapptr->state == STATE_NEW ||
@@ -225,6 +225,18 @@ check_entries(void)
       }
       uip_udp_send((unsigned char)(query + 5 - (char *)uip_appdata));
       break;
+    } else if (namemapptr->state == STATE_DONE){
+      // for entries which a are done, re-use the retries and err data members
+      // to implement a system to force the host to resolve again.
+      if (namemapptr->err++ >= RESOLV_COUNTER_1)
+      {
+        namemapptr->err = 0; // reset counter
+        if (namemapptr->retries++ >= RESOLV_COUNTER_2)
+        {
+          // timeout keeping name mapping 
+          namemapptr->state = STATE_UNUSED;
+        }
+      } 
     }
   }
 }
@@ -264,7 +276,7 @@ newdata(void)
     /* This entry is now finished. */
     namemapptr->state = STATE_DONE;
     namemapptr->err = hdr->flags2 & DNS_FLAG2_ERR_MASK;
-
+//sendString("DONE RESOLVE");
     /* Check for error. If so, call callback to inform. */
     if(namemapptr->err != 0) {
       namemapptr->state = STATE_ERROR;
@@ -288,7 +300,7 @@ newdata(void)
       if(*nameptr & 0xc0) {
 	/* Compressed name. */
 	nameptr +=2;
-	/*	printf("Compressed anwser\n");*/
+	//sendString("Compressed anwser\n");
       } else {
 	/* Not compressed name. */
 	nameptr = (char*)parse_name((unsigned char *)nameptr);
@@ -333,11 +345,12 @@ void
 resolv_appcall(void)
 {
   if(uip_udp_conn->rport == HTONS(53)) {
-sendString("resolv appcall and remote port 53\r\n");
     if(uip_poll()) {
+//sendString("resolv appcall poll\r\n");
       check_entries();
     }
     if(uip_newdata()) {
+//sendString("resolv appcall newdata\r\n");
       newdata();
     }
   }
@@ -354,7 +367,7 @@ resolv_query(char *name)
 {
   static u8_t i;
   static u8_t lseq, lseqi;
-  register struct namemap *nameptr;
+  register struct namemap *nameptr = NULL;
       
   lseq = lseqi = 0;
   
@@ -376,6 +389,11 @@ resolv_query(char *name)
 
   /*  printf("Using entry %d\n", i);*/
 
+  if (nameptr == NULL) {
+    return;
+  }
+//sendString("New entry in namemap");
+//sendString(name);
   strcpy(nameptr->name, name);
   nameptr->state = STATE_NEW;
   nameptr->seqno = seqno;
@@ -400,7 +418,7 @@ resolv_lookup(char *name)
 {
   static u8_t i;
   struct namemap *nameptr;
-  
+//sendString("calling lookup");  
   /* Walk through the list to see if the name is in there. If it is
      not, we return NULL. */
   for(i = 0; i < RESOLV_ENTRIES; ++i) {
@@ -472,7 +490,7 @@ resolv_init(void)
 {
   static u8_t i;
   
-sendString("resolv INIT\r\n");
+//sendString("resolv INIT\r\n");
   for(i = 0; i < RESOLV_ENTRIES; ++i) {
     names[i].state = STATE_DONE;
   }
@@ -484,8 +502,26 @@ sendString("resolv INIT\r\n");
 // this is a do nothing stub as apps are just going to check again and again
 void resolv_found(char *name, u16_t *ipaddr)
 {
-    // Apps should just poll resolv_lookup(char *name) as it takes time to 
-    // resolve the host name to an IP
+  char ip[60];
+
+  sendString("\r\nresolv found: ");
+  if (ipaddr == NULL)
+  {
+    sendString("error in resolve");
+  }
+  else
+  {
+     sprintf(ip, "Found name '%s' = %d.%d.%d.%d\n", name,
+                 htons(ipaddr[0]) >> 8,
+                 htons(ipaddr[0]) & 0xff,
+                 htons(ipaddr[1]) >> 8,
+                 htons(ipaddr[1]) & 0xff);
+    sendString(ip);
+  }
+  sendString("\r\n");
+
+  // Apps should just poll resolv_lookup(char *name) as it takes time to 
+  // resolve the host name to an IP
 }
 #endif
 
