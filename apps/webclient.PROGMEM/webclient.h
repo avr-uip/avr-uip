@@ -46,7 +46,7 @@
 #ifndef __WEBCLIENT_H__
 #define __WEBCLIENT_H__
 
-
+#include <avr/pgmspace.h>
 #include "webclient-strings.h"
 #include "uipopt.h"
 
@@ -63,7 +63,7 @@ struct webclient_state {
   u16_t getrequestptr;
   u16_t getrequestleft;
   
-  char httpheaderline[200];
+  char httpheaderline[80];
   u16_t httpheaderlineptr;
 
   char mimetype[32];
@@ -169,7 +169,8 @@ void webclient_init(void);
  *
  * \retval 1 if the connection was initiated.
  */
-unsigned char webclient_get(char *host, u16_t port, char *file);
+unsigned char webclient_get(const char *host, u16_t port, const char *file);
+unsigned char webclient_get_P(const prog_char *host, u16_t port, const prog_char *file);
 
 /**
  * Close the currently open HTTP connection.

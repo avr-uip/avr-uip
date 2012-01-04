@@ -61,6 +61,7 @@
 #include "resolv.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 #define WEBCLIENT_TIMEOUT 100
 
@@ -123,7 +124,7 @@ init_connection(void)
     sizeof(http_crnl) - 1 +
     sizeof(http_host) - 1 +
     sizeof(http_crnl) - 1 +
-    strlen(http_user_agent_fields) +
+    strlen_P(http_user_agent_fields) +
     strlen(s.file) + strlen(s.host);
   s.getrequestptr = 0;
 
@@ -137,7 +138,7 @@ webclient_close(void)
 }
 /*-----------------------------------------------------------------------------------*/
 unsigned char
-webclient_get(char *host, u16_t port, char *file)
+webclient_get(const char *host, u16_t port, const char *file)
 {
   struct uip_conn *conn;
   uip_ipaddr_t *ipaddr;
@@ -146,7 +147,7 @@ webclient_get(char *host, u16_t port, char *file)
   /* First check if the host is an IP address. */
   ipaddr = &addr;
   if(uiplib_ipaddrconv(host, (unsigned char *)addr) == 0) {
-    ipaddr = (uip_ipaddr_t *)resolv_lookup(host);
+    ipaddr = (uip_ipaddr_t *)resolv_lookup((char*)host);  // cast away const unsafe!
     
     if(ipaddr == NULL) {
       return 0;
@@ -167,11 +168,38 @@ webclient_get(char *host, u16_t port, char *file)
   return 1;
 }
 /*-----------------------------------------------------------------------------------*/
-static unsigned char *
-copy_string(unsigned char *dest,
-	    const unsigned char *src, unsigned char len)
+unsigned char
+webclient_get_P(const prog_char *host, u16_t port, const prog_char *file)
+{
+  unsigned char result;
+
+  char* buf_host = malloc(strlen_P(host)+1);
+  char* buf_file = malloc(strlen_P(file)+1);
+
+  strcpy_P(buf_host,host);
+  strcpy_P(buf_file,file);
+
+  result = webclient_get(buf_host,port,buf_file);
+
+  free (buf_file);
+  free (buf_host);
+
+  return result;
+}
+/*-----------------------------------------------------------------------------------*/
+static char *
+copy_string(char *dest,
+	    const char *src, unsigned char len)
 {
   strncpy(dest, src, len);
+  return dest + len;
+}
+/*-----------------------------------------------------------------------------------*/
+static char *
+copy_string_P(char *dest,
+	    const prog_char *src, unsigned char len)
+{
+  strncpy_P(dest, src, len);
   return dest + len;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -185,19 +213,19 @@ senddata(void)
   if(s.getrequestleft > 0) {
     cptr = getrequest = (char *)uip_appdata;
 
-    cptr = copy_string(cptr, http_get, sizeof(http_get) - 1);
+    cptr = copy_string_P(cptr, http_get, sizeof(http_get) - 1);
     cptr = copy_string(cptr, s.file, strlen(s.file));
     *cptr++ = ISO_space;
-    cptr = copy_string(cptr, http_10, sizeof(http_10) - 1);
+    cptr = copy_string_P(cptr, http_10, sizeof(http_10) - 1);
 
-    cptr = copy_string(cptr, http_crnl, sizeof(http_crnl) - 1);
+    cptr = copy_string_P(cptr, http_crnl, sizeof(http_crnl) - 1);
     
-    cptr = copy_string(cptr, http_host, sizeof(http_host) - 1);
+    cptr = copy_string_P(cptr, http_host, sizeof(http_host) - 1);
     cptr = copy_string(cptr, s.host, strlen(s.host));
-    cptr = copy_string(cptr, http_crnl, sizeof(http_crnl) - 1);
+    cptr = copy_string_P(cptr, http_crnl, sizeof(http_crnl) - 1);
 
-    cptr = copy_string(cptr, http_user_agent_fields,
-		       strlen(http_user_agent_fields));
+    cptr = copy_string_P(cptr, http_user_agent_fields,
+		       strlen_P(http_user_agent_fields));
     
     len = s.getrequestleft > uip_mss()?
       uip_mss():
@@ -220,35 +248,50 @@ acked(void)
   }
 }
 /*-----------------------------------------------------------------------------------*/
+char *uip_appdata_ptr;
+extern void uip_log(char*);
+extern void uip_log_P(prog_char*);
+/*-----------------------------------------------------------------------------------*/
 static u16_t
 parse_statusline(u16_t len)
 {
   char *cptr;
+  uint8_t result_code_at;
   
   while(len > 0 && s.httpheaderlineptr < sizeof(s.httpheaderline)) {
-    s.httpheaderline[s.httpheaderlineptr] = *(char *)uip_appdata;
-    ++((char *)uip_appdata);
+    s.httpheaderline[s.httpheaderlineptr] = *uip_appdata_ptr++;
     --len;
     if(s.httpheaderline[s.httpheaderlineptr] == ISO_nl) {
 
-      if((strncmp(s.httpheaderline, http_10,
-		  sizeof(http_10) - 1) == 0) ||
-	 (strncmp(s.httpheaderline, http_11,
-		  sizeof(http_11) - 1) == 0)) {
-	cptr = &(s.httpheaderline[9]);
+      result_code_at = 0; 
+      if((strncmp_P(s.httpheaderline, http_10, sizeof(http_10) - 1) == 0))
+        result_code_at = sizeof(http_10);
+      else if((strncmp_P(s.httpheaderline, http_11, sizeof(http_11) - 1) == 0))
+        result_code_at = sizeof(http_11);
+      else if((strncmp_P(s.httpheaderline, http_icy, sizeof(http_icy) - 1) == 0))
+        result_code_at = sizeof(http_icy);
+
+      if(result_code_at) {
+	cptr = &(s.httpheaderline[result_code_at]);
 	s.httpflag = HTTPFLAG_NONE;
-	if(strncmp(cptr, http_200, sizeof(http_200) - 1) == 0) {
+	if(strncmp_P(cptr, http_200, sizeof(http_200) - 1) == 0) {
 	  /* 200 OK */
 	  s.httpflag = HTTPFLAG_OK;
-	} else if(strncmp(cptr, http_301, sizeof(http_301) - 1) == 0 ||
-		  strncmp(cptr, http_302, sizeof(http_302) - 1) == 0) {
+	  uip_log_P(PSTR("HTTP OK"));
+	} else if(strncmp_P(cptr, http_301, sizeof(http_301) - 1) == 0 ||
+		  strncmp_P(cptr, http_302, sizeof(http_302) - 1) == 0) {
 	  /* 301 Moved permanently or 302 Found. Location: header line
 	     will contain thw new location. */
 	  s.httpflag = HTTPFLAG_MOVED;
+	  uip_log_P(PSTR("HTTP MOVED"));
 	} else {
 	  s.httpheaderline[s.httpheaderlineptr - 1] = 0;
+          uip_log(s.httpheaderline);
 	}
       } else {
+	uip_log_P(PSTR("HTTP FAILED"));
+        s.httpheaderline[s.httpheaderlineptr - 1] = 0;
+        uip_log(s.httpheaderline);
 	uip_abort();
 	webclient_aborted();
 	return 0;
@@ -266,6 +309,8 @@ parse_statusline(u16_t len)
   return len;
 }
 /*-----------------------------------------------------------------------------------*/
+#if 0
+// defined but not used
 static char
 casecmp(char *str1, const char *str2, char len)
 {
@@ -286,16 +331,37 @@ casecmp(char *str1, const char *str2, char len)
   }
   return 0;
 }
+#endif
+/*-----------------------------------------------------------------------------------*/
+static char
+casecmp_P(char *str1, const prog_char *str2, char len)
+{
+  static char c;
+  
+  while(len > 0) {
+    c = *str1;
+    /* Force lower-case characters. */
+    if(c & 0x40) {
+      c |= 0x20;
+    }
+    if(pgm_read_byte(str2) != c) {
+      return 1;
+    }
+    ++str1;
+    ++str2;
+    --len;
+  }
+  return 0;
+}
 /*-----------------------------------------------------------------------------------*/
 static u16_t
 parse_headers(u16_t len)
 {
   char *cptr;
   static unsigned char i;
-  
+
   while(len > 0 && s.httpheaderlineptr < sizeof(s.httpheaderline)) {
-    s.httpheaderline[s.httpheaderlineptr] = *(char *)uip_appdata;
-    ++((char *)uip_appdata);
+    s.httpheaderline[s.httpheaderlineptr] = *uip_appdata_ptr++;
     --len;
     if(s.httpheaderline[s.httpheaderlineptr] == ISO_nl) {
       /* We have an entire HTTP header line in s.httpheaderline, so
@@ -305,26 +371,28 @@ parse_headers(u16_t len)
 	   we are done with the headers and proceed with the actual
 	   data. */
 	s.state = WEBCLIENT_STATE_DATA;
+        uip_log_P(PSTR("WEBCLIENT_STATE_DATA"));
 	return len;
       }
 
       s.httpheaderline[s.httpheaderlineptr - 1] = 0;
+      uip_log(s.httpheaderline);
       /* Check for specific HTTP header fields. */
-      if(casecmp(s.httpheaderline, http_content_type,
+      if(casecmp_P(s.httpheaderline, http_content_type,
 		     sizeof(http_content_type) - 1) == 0) {
 	/* Found Content-type field. */
 	cptr = strchr(s.httpheaderline, ';');
 	if(cptr != NULL) {
 	  *cptr = 0;
 	}
-	strncpy(s.mimetype, s.httpheaderline +
+	strncpy_P(s.mimetype, s.httpheaderline +
 		sizeof(http_content_type) - 1, sizeof(s.mimetype));
-      } else if(casecmp(s.httpheaderline, http_location,
+      } else if(casecmp_P(s.httpheaderline, http_location,
 			    sizeof(http_location) - 1) == 0) {
 	cptr = s.httpheaderline +
 	  sizeof(http_location) - 1;
 	
-	if(strncmp(cptr, http_http, 7) == 0) {
+	if(strncmp_P(cptr, http_http, 7) == 0) {
 	  cptr += 7;
 	  for(i = 0; i < s.httpheaderlineptr - 7; ++i) {
 	    if(*cptr == 0 ||
@@ -350,6 +418,14 @@ parse_headers(u16_t len)
       ++s.httpheaderlineptr;
     }
   }
+
+  /* Handle header line overflow */
+  if ( s.httpheaderlineptr == sizeof(s.httpheaderline) ) {
+    s.httpheaderline[s.httpheaderlineptr - i] = 0;
+    uip_log(s.httpheaderline);
+      s.httpheaderlineptr = 0;
+  }
+
   return len;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -359,6 +435,7 @@ newdata(void)
   u16_t len;
 
   len = uip_datalen();
+  uip_appdata_ptr = uip_appdata;
 
   if(s.state == WEBCLIENT_STATE_STATUSLINE) {
     len = parse_statusline(len);
