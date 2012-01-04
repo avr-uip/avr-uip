@@ -39,7 +39,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_MAX_CONNECTIONS 6
+#define UIP_CONF_MAX_CONNECTIONS 4
 
 /**
  * Maximum number of listening TCP ports.
@@ -80,7 +80,7 @@ typedef unsigned short uip_stats_t;
  *
  * \hideinitializer
  */
-#define UIP_CONF_UDP_CHECKSUMS   1
+#define UIP_CONF_UDP_CHECKSUMS   0 // done by network chip
 
 /**
  * uIP statistics on or off

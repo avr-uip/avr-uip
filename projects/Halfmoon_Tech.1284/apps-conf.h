@@ -5,6 +5,9 @@
 
 #define PORT_APP_MAPPER 1
 
+#include "uart-t.h"
+
+
 //#include "smtp.h"
 //#include "hello-world.h"
 //#include "simple-httpd.h"
@@ -22,7 +25,7 @@
 #define HTTPD_MAX_CONNECTIONS 4
 #include "webserver.h"
 #include "dhcpc.h"
-//#include "resolv.h"
+#include "resolv.h"
 //#include "webclient.h"
 
 //#define HTTP_POST_SUPPORT

@@ -46,11 +46,6 @@
 //Include uip.h gives all the uip configurations in uip-conf.h
 #include "uip.h"
 
-
-#define led_conf()      DDRC |= (1<<DDC0)
-#define led_low()       PORTC |= (1<<PORTC0)
-#define led_high()      PORTC &= ~(1<<PORTC0)
-#define led_blink()     PORTC ^= (1<<PORTC0)
-
+#include "led-conf.h"
 
 #endif /*__GLOBAL_CONF_H__*/

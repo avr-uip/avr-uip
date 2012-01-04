@@ -34,7 +34,7 @@ void clock_init()
 }
 
 //Return time
-clock_time_t clock_time()
+clock_time_t clock_time(void)
 {
 	return clock_datetime;
 }

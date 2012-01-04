@@ -11,7 +11,7 @@ HTTPD_FS_DIRNAME = httpd-fs-halfmoon_tech.1284
 #Compiled apps
 APPS    = webserver.PROGMEM port_app_mapper
 APPS += telnetd dhcpc 
-#APPS += resolv
+APPS += resolv
 
 #Compiled drivers
 DEVS	+= enc28j60.tux #The rest are determined by makefiles for apps
@@ -21,7 +21,7 @@ DEVS	+= enc28j60.tux #The rest are determined by makefiles for apps
 LIBS += net_conf
 
 #Project specific files
-$(NAME)_SOURCES = main.c clock-arch.c
+$(NAME)_SOURCES = main.c clock-arch.c uart.c
 
 
 #Include global configurations
