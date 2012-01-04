@@ -1,0 +1,1 @@
+LIB_SOURCES += timer32.c
