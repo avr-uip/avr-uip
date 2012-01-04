@@ -911,6 +911,8 @@ struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport);
 #if !UIP_CONF_IPV6
 #define uip_ipaddr_cmp(addr1, addr2) (((u16_t *)addr1)[0] == ((u16_t *)addr2)[0] && \
 				      ((u16_t *)addr1)[1] == ((u16_t *)addr2)[1])
+#define uip_ipaddr_cmp_host(addr) (((u16_t *)uip_hostaddr[0] == (u16_t *)addr[0]) && \
+                                    ((u16_t *)uip_hostaddr[1] == (u16_t *)addr[1]))
 #else /* !UIP_CONF_IPV6 */
 #define uip_ipaddr_cmp(addr1, addr2) (memcmp(addr1, addr2, sizeof(uip_ip6addr_t)) == 0)
 #endif /* !UIP_CONF_IPV6 */
