@@ -39,7 +39,10 @@
 #include "dhcpc.h"
 #include "timer.h"
 #include "pt.h"
-//#include "usart.h"
+
+#if defined PORT_APP_MAPPER
+bool dhcpc_running = 0; 
+#endif
 
 // check that the uip buffer is large enough for dhcp to work.
 #if UIP_CONF_BUFFER_SIZE < 590
@@ -50,6 +53,8 @@
 #define STATE_SENDING         1
 #define STATE_OFFER_RECEIVED  2
 #define STATE_CONFIG_RECEIVED 3
+#define STATE_RENEW           4
+#define STATE_FAIL            5
 
 static struct dhcpc_state s;
 
@@ -87,6 +92,8 @@ struct dhcp_msg {
 #define DHCPACK       5
 #define DHCPNAK       6
 #define DHCPRELEASE   7
+
+static uint8_t msg_type;
 
 #define DHCP_OPTION_SUBNET_MASK   1
 #define DHCP_OPTION_ROUTER        3
@@ -158,7 +165,7 @@ create_msg(register struct dhcp_msg *m)
   m->flags = HTONS(BOOTP_BROADCAST); /*  Broadcast bit. */
   /*  uip_ipaddr_copy(m->ciaddr, uip_hostaddr);*/
   memcpy(m->ciaddr, uip_hostaddr, sizeof(m->ciaddr));
-  memset(m->yiaddr, 0, sizeof(m->yiaddr));
+  memset(m->yiaddr, 0, sizeof(m->yiaddr)); // always zero per rfc, server def
   memset(m->siaddr, 0, sizeof(m->siaddr));
   memset(m->giaddr, 0, sizeof(m->giaddr));
   memcpy(m->chaddr, s.mac_addr, s.mac_len);
@@ -254,15 +261,24 @@ static
 PT_THREAD(handle_dhcp(void))
 {
   PT_BEGIN(&s.pt);
-  
+
+#if defined PORT_APP_MAPPER
+  dhcpc_running = 1; 
+#endif
+
+
+  if (s.state == STATE_RENEW)
+      goto send_request_section;
+
   /* try_again:*/
   s.state = STATE_SENDING;
-  s.ticks = CLOCK_SECOND * 5;
+  s.ticks = CLOCK_SECOND;
 
+//sendString("\r\ndhcpc handle dhcp passed: STATE_SENDING");
   do {
     send_discover();
     timer_set(&s.timer, s.ticks);
-		// NOTE: fixed as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
+    // NOTE: fixed as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
     PT_YIELD_UNTIL(&s.pt, uip_newdata() || timer_expired(&s.timer));
 //sendString("Just got something\n\r");
 
@@ -272,7 +288,7 @@ PT_THREAD(handle_dhcp(void))
         if (parse_msg() == DHCPOFFER)
         {
             s.state = STATE_OFFER_RECEIVED;
-            //break;
+            break;
         }
     }
     else
@@ -281,24 +297,36 @@ PT_THREAD(handle_dhcp(void))
         if(s.ticks < CLOCK_SECOND * 60) {
             s.ticks *= 2;
         }
+        else
+        {
+            s.ticks = CLOCK_SECOND;
+        }
     }
 
   } while(s.state != STATE_OFFER_RECEIVED);
   
-  s.ticks = CLOCK_SECOND * 3;
+//sendString("\r\ndhcpc handle dhcp passed: STATE_OFFER_RECEIVED");
+  s.ticks = CLOCK_SECOND;
 
+send_request_section:
   do {
     send_request();
     timer_set(&s.timer, s.ticks);
-		// NOTE: fixed as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
+    // NOTE: fixed as per http://www.mail-archive.com/uip-users@sics.se/msg00003.html
     PT_YIELD_UNTIL(&s.pt, uip_newdata() || timer_expired(&s.timer));
 
     if(uip_newdata())
     {
-        if (parse_msg() == DHCPACK)
+        msg_type = parse_msg();
+        if (msg_type == DHCPACK)
         {
             s.state = STATE_CONFIG_RECEIVED;
-            //break;
+            break;
+        }
+        else if (msg_type == DHCPNAK)
+        {
+            s.state = STATE_FAIL;
+            goto close_and_clean_up;
         }
     }
     else
@@ -307,9 +335,11 @@ PT_THREAD(handle_dhcp(void))
           s.ticks += CLOCK_SECOND;
         } else {
           PT_RESTART(&s.pt);
+//sendString("\r\ndhcpc handle RESTARTING!");
         }
     }
   } while(s.state != STATE_CONFIG_RECEIVED);
+//sendString("\r\ndhcpc handle dhcp passed: STATE_CONFIG_RECEIVED");
   
 #if DEBUG_SERIAL
   printf_P(PSTR("Got IP address %d.%d.%d.%d\r\n"),
@@ -340,6 +370,15 @@ PT_THREAD(handle_dhcp(void))
     PT_YIELD(&s.pt);
   }
 */
+close_and_clean_up:
+#if defined PORT_APP_MAPPER
+  dhcpc_running = 0; 
+#endif
+
+  // all done with the connection, clean up
+  uip_udp_remove(s.conn);
+  s.conn = NULL;
+//sendString("\r\ndhcpc handle dhcp passed: END");
   PT_END(&s.pt);
 }
 /*---------------------------------------------------------------------------*/
@@ -363,12 +402,13 @@ dhcpc_init(const void *mac_addr, uint8_t mac_len)
 void
 dhcpc_appcall(void)
 {
-    // only when we ask for a new ip if we have a udp conn setup
-    // since the dhcpc_appcall will be called as part of the normal uip app loop
-    if ((s.conn != NULL) && (s.state != STATE_CONFIG_RECEIVED))
-	{
-        (void) handle_dhcp();
-	}
+  // only when we ask for a new ip if we have a udp conn setup
+  // since the dhcpc_appcall will be called as part of the normal uip app loop
+  if ((s.conn != NULL) && (s.state != STATE_CONFIG_RECEIVED))
+  {
+//sendString("\r\ndhcpc appcall w/o config received");
+    (void) handle_dhcp();
+  }
 }
 /*---------------------------------------------------------------------------*/
 void
@@ -376,7 +416,12 @@ dhcpc_request(void)
 {
   u16_t ipaddr[2];
   
+//sendString("\r\ndhcpc request called");
   if(s.state == STATE_INITIAL) {
+//sendString("\r\ndhcpc request init state");
+#if defined PORT_APP_MAPPER
+    dhcpc_running = 1; 
+#endif
     uip_ipaddr(ipaddr, 0,0,0,0);
     uip_sethostaddr(ipaddr);
     //handle_dhcp();
@@ -387,8 +432,35 @@ dhcpc_request(void)
 void
 dhcpc_renew(void)
 {
-    u16_t ipaddr[2];
-    uip_ipaddr(ipaddr, 0,0,0,0);
-    uip_sethostaddr(ipaddr);
-    (void) handle_dhcp();
+  uip_ipaddr_t addr;
+
+#if defined PORT_APP_MAPPER
+  if (dhcpc_running)
+    return;
+
+  dhcpc_running = 1;
+#else
+  if (s.state != STATE_CONFIG_RECEIVED)
+  {
+    return;
+  }
+#endif
+
+//sendString("\r\ndhcpc renew called");
+  // if no server ip then we have to do a full request
+  if (s.serverid[0] == 0)
+  {
+    dhcpc_init(s.mac_addr, s.mac_len);
+    return;
+  }
+
+  // unicast to dhcp server
+  uip_ipaddr(addr, s.serverid[0], s.serverid[1], s.serverid[2], s.serverid[3]);
+  s.conn = uip_udp_new(&addr, HTONS(DHCPC_SERVER_PORT));
+  if(s.conn != NULL) {
+    uip_udp_bind(s.conn, HTONS(DHCPC_CLIENT_PORT));
+  }
+  s.state = STATE_RENEW;
+
+  PT_INIT(&s.pt);
 }

@@ -64,6 +64,7 @@ void dhcpc_configured(const struct dhcpc_state *s);
 
 
 #if defined PORT_APP_MAPPER
+extern bool dhcpc_running;
 	#define DHCPC_APP_CALL_MAP {dhcpc_appcall, 68, 67},
 #else
 	#define DHCPC_APP_CALL_MAP
