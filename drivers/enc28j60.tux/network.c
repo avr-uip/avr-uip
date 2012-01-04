@@ -32,3 +32,8 @@ void network_get_MAC(u08* macaddr)
     *macaddr++ = enc28j60Read(MAADR1);
     *macaddr++ = enc28j60Read(MAADR0);
 }
+
+uint8_t network_link_state()
+{
+    return (enc28j60linkup());
+}

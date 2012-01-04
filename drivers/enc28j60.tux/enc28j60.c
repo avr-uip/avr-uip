@@ -181,6 +181,7 @@ void enc28j60clkout(uint8_t clk)
 
 void enc28j60Init(uint8_t* macaddr)
 {
+		uint16_t temp;
 	// initialize I/O
         // ss as output:
 	ENC28J60_CONTROL_DDR |= 1<<ENC28J60_CONTROL_CS;
@@ -233,11 +234,13 @@ void enc28j60Init(uint8_t* macaddr)
         // in binary these poitions are:11 0000 0011 1111
         // This is hex 303F->EPMM0=0x3f,EPMM1=0x30
 // filtering removes  DHCP support enc28j60Write(ERXFCON, ERXFCON_UCEN|ERXFCON_CRCEN|ERXFCON_PMEN);
-	enc28j60Write(EPMM0, 0x3f);
+enc28j60Write(ERXFCON, ERXFCON_UCEN|ERXFCON_CRCEN|ERXFCON_BCEN);
+//enc28j60Write(ERXFCON, ERXFCON_UCEN|ERXFCON_BCEN);
+/*	enc28j60Write(EPMM0, 0x3f);
 	enc28j60Write(EPMM1, 0x30);
 	enc28j60Write(EPMCSL, 0xf9);
 	enc28j60Write(EPMCSH, 0xf7);
-        //
+*/        //
         //
 	// do bank 2 stuff
 	// enable MAC receive
@@ -266,6 +269,18 @@ void enc28j60Init(uint8_t* macaddr)
         enc28j60Write(MAADR0, macaddr[5]);
 	// no loopback of transmitted frames
 	enc28j60PhyWrite(PHCON2, PHCON2_HDLDIS);
+
+        // B5, B7 errata 13, phy issue at half-duplex mode, force full-duplex
+        // Set the PHY to the proper duplex mode
+	temp = enc28j60PhyReadH(PHCON1);
+	temp &= ~PHCON1_PDPXMD;
+	enc28j60PhyWrite(PHCON1, temp);
+	// Set the MAC to the proper duplex mode
+	temp = enc28j60Read(MACON3);
+	temp &= ~MACON3_FULDPX;
+	enc28j60Write(MACON3, temp);
+
+
 	// switch to bank 0
 	enc28j60SetBank(ECON1);
 	// enable interrutps
