@@ -4,8 +4,6 @@
 #include "port_app_mapper.h"
 #include "global-conf.h"
 
-//#include "usart.h"
-
 #ifndef WEBSERVER_APP_CALL_MAP
 #define WEBSERVER_APP_CALL_MAP
 #endif
@@ -30,27 +28,31 @@
 #define RESOLV_APP_CALL_MAP
 #endif
 
-//struct pt port_thread;
+#ifndef NTPCLIENT_APP_CALL_MAP
+#define NTPCLIENT_APP_CALL_MAP
+#endif
+
 
 struct port_appcall_map tcp_port_app_map[] = {
-		WEBSERVER_APP_CALL_MAP
-		WEBCLIENT_APP_CALL_MAP
-		TELNET_APP_CALL_MAP
-		SIMPLE_HTTPD_APP_CALL_MAP
-		{NULL, 0, 0},
-	};
+    WEBSERVER_APP_CALL_MAP
+    WEBCLIENT_APP_CALL_MAP
+    TELNET_APP_CALL_MAP
+    SIMPLE_HTTPD_APP_CALL_MAP
+    {NULL, 0, 0},
+};
 
 struct port_appcall_map udp_port_app_map[] = {
-		DHCPC_APP_CALL_MAP
-		RESOLV_APP_CALL_MAP
-		{NULL, 0, 0},
-	};
+    DHCPC_APP_CALL_MAP
+    RESOLV_APP_CALL_MAP
+    NTPCLIENT_APP_CALL_MAP
+    {NULL, 0, 0},
+};
 
 // define a basic common type for udp and tcp connections so I can look at the ports
 struct uip_base_conn {
   uip_ipaddr_t ripaddr;   /**< The IP address of the remote host. */
 
-  u16_t lport;        /**< The local TCP port, in network byte order. */
+  u16_t lport;        /**< The local port, in network byte order. */
   u16_t rport; 
 };
 
@@ -61,8 +63,19 @@ struct uip_base_conn *base_conn;
 //   pointed to by the param
 void uip_port_app_mapper(struct port_appcall_map* cur_map)
 {
-    // yes this will walk the netire list which is 2 items at the moment
-    while (cur_map->an_appcall != NULL)
+#ifdef __DHCPC_H__
+    // if dhcpc is enabled and running we want our ip ASAP so skip all others
+    if(dhcpc_running && uip_poll())
+    {
+        dhcpc_appcall();
+        base_conn = NULL;
+        return;    
+    }
+#endif
+
+
+    // yes this will walk the entire list which is up to 4 items at the moment
+    while ((base_conn != NULL) && (cur_map->an_appcall != NULL))
     {
         // Now match the app to the packet.
         // local AND/OR remote ports match
