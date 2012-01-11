@@ -22,11 +22,9 @@ face Driver
 #include <avr/delay.h>
 #endif
 
-#include "led-conf.h"
 
 static uint8_t Enc28j60Bank;
 static int16_t gNextPacketPtr;
-static uint8_t chip_rev = 0;
 #define ENC28J60_CONTROL_PORT   PORTB
 #define ENC28J60_CONTROL_DDR    DDRB
 #if defined(__AVR_ATmega88__) || defined(__AVR_ATmega88P__) || defined(__AVR_ATmega168__) || defined(__AVR_ATmega168P__) || defined(__AVR_ATmega328P__) 
@@ -156,23 +154,23 @@ uint16_t enc28j60PhyReadH(uint8_t address)
 
 uint16_t enc28j60PhyRead(uint8_t address)
 {
-	uint16_t data;
+       uint16_t data;
 
-	// Set the right address and start the register read operation
-	enc28j60Write(MIREGADR, address);
-	enc28j60Write(MICMD, MICMD_MIIRD);
+       // Set the right address and start the register read operation
+       enc28j60Write(MIREGADR, address);
+       enc28j60Write(MICMD, MICMD_MIIRD);
 
-	// wait until the PHY read completes^M
-	while(enc28j60Read(MISTAT) & MISTAT_BUSY);
+       // wait until the PHY read completes^M
+       while(enc28j60Read(MISTAT) & MISTAT_BUSY);
 
-	// quit reading
+       // quit reading
         enc28j60Write(MICMD, 0x00);
 
-	// get data value
-	data  = enc28j60Read(MIRDL);
-	data |= enc28j60Read(MIRDH);
-	// return the data^M
-	return data;
+       // get data value
+       data  = enc28j60Read(MIRDL);
+       data |= enc28j60Read(MIRDH);
+       // return the data^M
+       return data;
 }
 
 
@@ -203,26 +201,9 @@ void enc28j60clkout(uint8_t clk)
 	enc28j60Write(ECOCON, clk & 0x7);
 }
 
-// read the revision of the chip:
-uint8_t enc28j60getrev(void)
-{
-        uint8_t rev;
-        rev=enc28j60Read(EREVID);
-        // microchip forgott to step the number on the silcon when they
-        // released the revision B7. 6 is now rev B7. We still have
-        // to see what they do when they release B8. At the moment
-        // there is no B8 out yet
-        if (rev>5) rev++;
-	return(rev);
-}
-
-
 void enc28j60Init(uint8_t* macaddr)
 {
-#if defined ENC28J60_HARD_RESET_PIN
-// add logic to reset the hardware via pin
-#endif
-
+		uint16_t temp;
 	// initialize I/O
         // ss as output:
 	ENC28J60_CONTROL_DDR |= 1<<ENC28J60_CONTROL_CS;
@@ -319,23 +300,30 @@ enc28j60Write(ERXFCON, ERXFCON_UCEN|ERXFCON_CRCEN|ERXFCON_BCEN);
 	enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, EIE, EIE_INTIE|EIE_PKTIE);
 	// enable packet reception
 	enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_RXEN);
+}
 
-	// save the chip rev for runtime errata fixes
-	chip_rev = enc28j60getrev();
+// read the revision of the chip:
+uint8_t enc28j60getrev(void)
+{
+        uint8_t rev;
+        rev=enc28j60Read(EREVID);
+        // microchip forgott to step the number on the silcon when they
+        // released the revision B7. 6 is now rev B7. We still have
+        // to see what they do when they release B8. At the moment
+        // there is no B8 out yet
+        if (rev>5) rev++;
+	return(rev);
 }
 
 // link status
 uint8_t enc28j60linkup(void)
 {
         // bit 10 (= bit 3 in upper reg)
-	return(enc28j60PhyRead(PHSTAT1) & PHSTAT1_LLSTAT);
+        return(enc28j60PhyRead(PHSTAT1) & PHSTAT1_LLSTAT);
 }
 
 void enc28j60PacketSend(uint16_t len, uint8_t* packet)
 {
-        uint16_t retry_counter = 0, retry_count;
-        uint8_t ERDPTL_val, ERDPTH_val, ETXNDL_val, ETXNDH_val;
-
         // Check no transmit in progress
         while (enc28j60ReadOp(ENC28J60_READ_CTRL_REG, ECON1) & ECON1_TXRTS)
         {
@@ -357,110 +345,6 @@ void enc28j60PacketSend(uint16_t len, uint8_t* packet)
 	enc28j60WriteBuffer(len, packet);
 	// send the contents of the transmit buffer onto the network
 	enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
-
-// based on errata note and code found on web forum
-//IF CHIP IS 5 or 7
-	if ((chip_rev == 0x5) || (chip_rev == 0x7))
-	{
-
-//ECON1.TXRST = 1
-		enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRST);
-//ECON1.TXRST = 0
-		enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRST);
-//EIR.TXERIF = 0
-		enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, EIR, EIR_TXERIF);
-//EIR.TXIF = 0
-		enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, EIR, EIR_TXIF);
-//ECON1.TXRTS = 1
-		enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
-
-//while(EIR.TXIF = 0 and EIR.TXERIF = 0)
-//    NOP
-        	while (!(enc28j60ReadOp(ENC28J60_READ_CTRL_REG, EIR) & (EIR_TXERIF | EIR_TXIF)) &&
-		(++retry_counter < 1000))
-		{	// pause for split moment... 
-			asm("nop");
-			asm("nop");
-			asm("nop");
-			asm("nop");
-		}
-
-//ECON1.TXRTS = 0
-		if((enc28j60Read(EIR) & EIR_TXERIF) || (retry_counter >= 1000))
-		{
-led_blink();
-			// looks like we are stuck, time to kick it
-			enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
-//read tsv (transmit status vector)
-// note I wouldn't have gotten both of these if not for the forum...
-			ERDPTL_val = enc28j60Read(ERDPTL);
-			ERDPTH_val = enc28j60Read(ERDPTH);
-
-			ETXNDL_val = enc28j60Read(ETXNDL);
-			ETXNDH_val = enc28j60Read(ETXNDH);
-
-//for retrycount = 0 to 15
-			for (retry_count = 0; retry_count < 15; retry_count++)
-			{
-//    if (EIR.TXERIF and tsv<Transmit Late Collision>) then
-				if ((enc28j60Read(EIR) & EIR_TXERIF) | 
-					(enc28j60Read(ESTAT) & ESTAT_LATECOL))
-				{
-					
-
-//        ECON1.TXRST = 1
-					enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRST);
-//        ECON1.TXRST = 0
-					enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRST);
-//EIR.TXERIF = 0
-					enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, EIR, EIR_TXERIF);
-//EIR.TXIF = 0
-					enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, EIR, EIR_TXIF);
-//ECON1.TXRTS = 1
-					enc28j60WriteOp(ENC28J60_BIT_FIELD_SET, ECON1, ECON1_TXRTS);
-
-//        while(EIR.TXIF = 0 and EIR.TXERIF = 0)
-//            NOP
-        				while (!(enc28j60ReadOp(ENC28J60_READ_CTRL_REG, EIR) & (EIR_TXERIF | EIR_TXIF)) &&
-						(++retry_counter < 1000))
-					{	// pause for split moment... 
-						asm("nop");
-						asm("nop");
-						asm("nop");
-						asm("nop");
-					}
-
-//        ECON1.TXRTS = 0
-					enc28j60WriteOp(ENC28J60_BIT_FIELD_CLR, ECON1, ECON1_TXRTS);
-//      read tsv
-// Note I didn't understand why you would do a read here but, the code in the forum show correct code with the wrong comment... it's supposed to be a write here!!  The errata is wrong!!!
-					enc28j60Write(ERDPTL, ERDPTL_val);
-					enc28j60Write(ERDPTH, ERDPTH_val);
-//    else
-				}
-				else
-				{
-//        exit for
-					break;
-//    end if
-				}
-//next retrycount
-			} // end - for loop
-
-			enc28j60Write(ETXNDL, ETXNDL_val);
-                        enc28j60Write(ETXNDH, ETXNDH_val);
-		} // end - if((enc28j60Read(EIR) & EIR_TXERIF) || (retry_counter >= 100))
-	} // end - if (chiprev... 
-#if defined ENC28J60_HARD_RESET_PIN
-	// if this is try the hardware is really messed up... hard reset
-	if (retry_count >= 15)
-	{
-		// save the mac addr
-		enc28j60Init(uint8_t* macaddr);
-		// thats all we can do... 
-	}
-#endif
-
 }
 
 // just probe if there might be a packet
