@@ -218,6 +218,14 @@
 #define PHSTAT1_PHDPX    0x0800
 #define PHSTAT1_LLSTAT   0x0004
 #define PHSTAT1_JBSTAT   0x0002
+// ENC28J60 PHY PHSTAT2 Register Bit Definitions
+#define PHSTAT2_DPXSTAT  0x0200 
+#define PHSTAT2_LSTAT    0x0400 
+#define PHSTAT2_COLSTAT  0x0800 
+#define PHSTAT2_RXSTAT   0x1000 
+#define PHSTAT2_TXSTAT   0x2000 
+
+
 // ENC28J60 PHY PHCON2 Register Bit Definitions
 #define PHCON2_FRCLINK   0x4000
 #define PHCON2_TXDIS     0x2000
