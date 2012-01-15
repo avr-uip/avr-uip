@@ -3,12 +3,14 @@
 #include <avr/io.h>
 #include <avr/eeprom.h>
 #include <avr/wdt.h>
+#include <avr/interrupt.h>
 
 #include "global-conf.h"
 #include "timer.h"
 #include <util/delay.h>
 
-#include <avr/interrupt.h>
+#include "a2d.h"
+#include "uart.h"
 
 
 
@@ -19,98 +21,76 @@
 #include <string.h>
 
 #include "net_conf.h"
-//#include "adc.h"
 
-//#include "uart.h"
+
+
+void read_sensors(void){
+	extern int sensor0, sensor1, sensor2, sensor3, sensor4, sensor5, sensor6, sensor7;
+
+	int ii, iii, sample,temp;
+	for(iii=0;iii<8;iii++){
+		sample=0;
+		for(ii=0;ii<16;ii++){
+			sample += a2dConvert10bit(iii);
+		}
+		temp = (sample / 16);
+		temp = convert_adc2far(temp);
+		if(iii==0){sensor0 = temp;}
+		else if(iii==1){sensor1 = temp;}
+		else if(iii==2){sensor2 = temp;}
+		else if(iii==3){sensor3 = temp;}
+		else if(iii==4){sensor4 = temp;}
+		else if(iii==5){sensor5 = temp;}
+		else if(iii==6){sensor6 = temp;}
+		else if(iii==7){sensor7 = temp;}
+	}
+}
+
+int convert_adc2far(int adc_data){
+	int temp;
+	float ttt;
+	ttt = (adc_data * .0048828125 * 100);
+	ttt = ttt * 1.8;
+	temp = ttt + 32;
+	return temp;
+}
 
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 struct timer dhcp_timer;
 
-int sec4=0;
-char foo[100];
-ISR(USART0_RX_vect){
-        sec4=4;
-        char tt;
-        tt = UDR;
-        if (tt == '\r'){
-//                process_command(foo);
-                sec4 = 0;
-                memset(foo, 0, sizeof(foo));
-        }
-        else{
-                foo[sec4] = tt;
-                sec4++;
-        }
-        return;
-}
+int bob = 986;
 
-// wd code from stoker bot
-ISR(WDT_vect) {
-    sendString("Watchdog caused reset\r\n");
- //   timedSaveEeprom();
-    while(true); //Next WDT timeout will reset chip
-}
+int sensor0 = 0;
+int sensor1 = 0;
+int sensor2 = 0;
+int sensor3 = 0;
+int sensor4 = 0;
+int sensor5 = 0;
+int sensor6 = 0;
+int sensor7 = 0;
 
 int main(void)
 {
-
-    // start watch dog setup
-    sei();
-    uint8_t resetSource = MCUSR;
-    MCUSR = 0;
-    wdt_reset();
+    /* Disable watchdog if enabled by bootloader/fuses */
+    MCUSR &= ~(1 << WDRF);
     wdt_disable();
 
-    wdt_enable(WDTO_4S);
-    WDTCSR |= (1 << WDIE);  //enable watchdog interrupt
-    wdt_reset();
-    cli();
-    // end  watch dog setup
 
-led_conf();
-led_low();
+//led_conf();
 
     CLKPR=(1<<CLKPCE); // change enable
     CLKPR=0; // "no pre-scaler"
     _delay_loop_1(0); // 60us
 
     int i;
-    struct timer periodic_timer, arp_timer;
-struct timer dns_test;
+    struct timer periodic_timer, arp_timer, sensor_timer;
 
     clock_init();
 
-    timer_set(&periodic_timer, CLOCK_SECOND * 3);
+    timer_set(&periodic_timer, CLOCK_SECOND);
     timer_set(&arp_timer, CLOCK_SECOND * 10);
+    timer_set(&sensor_timer, CLOCK_SECOND * 5);
 
-timer_set(&dns_test, CLOCK_SECOND * 600);
-
-    USART_Init(95);
-    sendString("\E[H\E[J");
-    sendString("Booting Biomass Ethernet\r\n");
-
-/*
-// debug why there was a reset
-    if(resetSource & (1<<WDRF))
-    {
-        sendString("Mega was reset by watchdog...\r\n");
-    }
-
-    if(resetSource & (1<<BORF))
-    {
-        sendString("Mega was reset by brownout...\r\n");
-    }
-
-    if(resetSource & (1<<EXTRF))
-    {
-        sendString("Mega was reset by external...\r\n");
-    }
-
-    if(resetSource & (1<<PORF))
-    {
-        sendString("Mega was reset by power on...\r\n");
-    }
-*/
     uip_init();
 
     // must be done or sometimes arp doesn't work
@@ -123,9 +103,8 @@ timer_set(&dns_test, CLOCK_SECOND * 600);
 
     if (net_conf_is_dhcpc())
     {
-        // setup the dhcp renew timer and make the first request
-        //timer_set(&dhcp_timer, CLOCK_SECOND * 3276); // 10 minutes till renew
-        timer_set(&dhcp_timer, CLOCK_SECOND * 300); 
+        // setup the dhcp renew timer the make the first request
+        timer_set(&dhcp_timer, CLOCK_SECOND * 600); // 10 minutes till renew
         dhcpc_init(net_conf_get_mac(), 6);
         dhcpc_request();
     }
@@ -133,38 +112,26 @@ timer_set(&dns_test, CLOCK_SECOND * 600);
     // start hosted services
     telnetd_init();
     httpd_init();
-    resolv_init();
+	a2dInit();
+	USART_Init(95);
+	sendString("\E[H\E[J");
+	sendString("Booting Biomass Ethernet\r\n");
 
-    // hard code resolver configuration for now
-    uip_ipaddr_t ipaddr;
-    uip_ipaddr(ipaddr, 192,168,2,1);
-    resolv_conf(ipaddr);
-
-
-/*
-    adc_init();
-*/
-
-    while(1)
+	while(1)
     {
-        // reset the watch dog timer every time we loop around
-        wdt_reset();
+        
+		if(timer_expired(&sensor_timer))
+        {
+            timer_reset(&sensor_timer);
+			read_sensors();
+        }
 
-    if (timer_expired(&dns_test))
-    {
-//led_high();
-sendString("\r\nDNS TEST:\r\n");
-        resolv_lookup("www.yahoo.com");
-        timer_reset(&dns_test);
-    }
-
-        uip_len = network_read();
+		uip_len = network_read();
         if(uip_len > 0)
         {
-//sendString("\r\nnetwork data read");
             if(BUF->type == htons(UIP_ETHTYPE_IP))
             {
-                //uip_arp_ipin(); // arp seems to have issues w/o this
+                uip_arp_ipin(); // arp seems to have issues w/o this
                 uip_input();
                 if(uip_len > 0)
                 {
@@ -240,6 +207,7 @@ void uip_log(char *m)
 
 void dhcpc_configured(const struct dhcpc_state *s)
 {
+//led_low();
     net_conf_set_ip_ipaddr(s->ipaddr);
 
     net_conf_set_nm_ipaddr(s->netmask);
@@ -256,50 +224,9 @@ void dhcpc_configured(const struct dhcpc_state *s)
 
 #ifdef DHCP_DEBUG
     // for now turn on the led when we get an ip
-    //led_high();
+    led_high();
 #endif
 
-char ip[60];
-  sprintf(ip, "\r\nDHCP ADDR %d.%d.%d.%d", 
-                 htons(s->ipaddr[0]) >> 8,
-                 htons(s->ipaddr[0]) & 0xff,
-                 htons(s->ipaddr[1]) >> 8,
-                 htons(s->ipaddr[1]) & 0xff);
-  sendString(ip);
-  sendString("\r\n");
-
 }
 
-/*---------------------------------------------------------------------------*/
-
-/*void
-smtp_done(unsigned char code)
-{
-	//printf("SMTP done with code %d\n", code);
-}
-void
-webclient_closed(void)
-{
-	//printf("Webclient: connection closed\n");
-}
-void
-webclient_aborted(void)
-{
-	//printf("Webclient: connection aborted\n");
-}
-void
-webclient_timedout(void)
-{
-	//printf("Webclient: connection timed out\n");
-}
-void
-webclient_connected(void)
-{
-	//printf("Webclient: connected, waiting for data...\n");
-}
-void
-webclient_datahandler(char *data, u16_t len)
-{
-	//printf("Webclient: got %d bytes of data.\n", len);
-}*/
 /*---------------------------------------------------------------------------*/

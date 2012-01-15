@@ -5,9 +5,6 @@
 
 #define PORT_APP_MAPPER 1
 
-#include "uart-t.h"
-
-
 //#include "smtp.h"
 //#include "hello-world.h"
 //#include "simple-httpd.h"
@@ -19,13 +16,13 @@
 // - uncomment to turn on POST support in the web server
 //#define HTTP_POST_SUPPORT
 // - uncomment to turn on param support for http GET requests in the web server
-//#define HTTP_GET_PARAM_SUPPORT
+#define HTTP_GET_PARAM_SUPPORT
 // - the max amount of data which may be posted or param in get (bytes)
-//#define MAX_PARAM_DATA 100
+#define MAX_PARAM_DATA 100
 #define HTTPD_MAX_CONNECTIONS 4
 #include "webserver.h"
 #include "dhcpc.h"
-#include "resolv.h"
+//#include "resolv.h"
 //#include "webclient.h"
 
 //#define HTTP_POST_SUPPORT
