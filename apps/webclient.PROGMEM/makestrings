@@ -12,6 +12,7 @@ sub stringify {
   open(FILE, "$name");
   
   while(<FILE>) {
+    next if(/^\#/);
     if(/(.+) "(.+)"/) {
       $var = $1;
       $data = $2;
@@ -37,7 +38,7 @@ sub stringify {
   close(OUTPUTC);
   close(OUTPUTH);
 }
-stringify("webclient-strings");
+stringify("webstrings_common");
 
 exit 0;
 
