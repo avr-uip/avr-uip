@@ -9,7 +9,7 @@ NAME    = halfmoon_tech
 HTTPD_FS_DIRNAME = httpd-fs
 
 #Compiled apps
-APPS    = webserver.PROGMEM port_app_mapper
+APPS    = webserver.PROGMEM.halfmoon_tech.1284 port_app_mapper
 APPS += telnetd dhcpc
 
 #Compiled drivers
