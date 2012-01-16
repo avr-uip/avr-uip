@@ -9,8 +9,8 @@
 #include "timer.h"
 #include <util/delay.h>
 
-#include "a2d.h"
-#include "uart.h"
+//#include "a2d.h"
+#include "uart-t.h"
 
 
 
@@ -22,37 +22,34 @@
 
 #include "net_conf.h"
 
+#define NUM_TEMP_SENSORS 8
+#define NUM_TEMP_READINGS 16
 
-
-void read_sensors(void){
-	extern int sensor0, sensor1, sensor2, sensor3, sensor4, sensor5, sensor6, sensor7;
-
-	int ii, iii, sample,temp;
-	for(iii=0;iii<8;iii++){
-		sample=0;
-		for(ii=0;ii<16;ii++){
-			sample += a2dConvert10bit(iii);
-		}
-		temp = (sample / 16);
-		temp = convert_adc2far(temp);
-		if(iii==0){sensor0 = temp;}
-		else if(iii==1){sensor1 = temp;}
-		else if(iii==2){sensor2 = temp;}
-		else if(iii==3){sensor3 = temp;}
-		else if(iii==4){sensor4 = temp;}
-		else if(iii==5){sensor5 = temp;}
-		else if(iii==6){sensor6 = temp;}
-		else if(iii==7){sensor7 = temp;}
-	}
-}
+// this may need to be a 32 bit number instead
+uint16_t temp_sensors[NUM_TEMP_SENSORS];
 
 int convert_adc2far(int adc_data){
-	int temp;
-	float ttt;
-	ttt = (adc_data * .0048828125 * 100);
-	ttt = ttt * 1.8;
-	temp = ttt + 32;
-	return temp;
+    float ttt;
+    ttt = (adc_data * .0048828125 * 100);
+    ttt = ttt * 1.8;
+    return (ttt + 32);
+}
+
+void read_sensors(void)
+{
+    uint8_t sensor_index, read_number;
+    uint16_t sample;
+    for(sensor_index = 0; sensor_index < NUM_TEMP_SENSORS; sensor_index++)
+    {
+        sample=0;
+        for(read_number = 0; read_number < NUM_TEMP_READINGS; read_number++)
+        {
+            //sample += a2dConvert10bit(sensor_number);
+        }
+        sample = (sample / NUM_TEMP_READINGS);
+        sample = convert_adc2far(sample);
+        temp_sensors[sensor_index] = sample;
+    }
 }
 
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
@@ -60,14 +57,6 @@ struct timer dhcp_timer;
 
 int bob = 986;
 
-int sensor0 = 0;
-int sensor1 = 0;
-int sensor2 = 0;
-int sensor3 = 0;
-int sensor4 = 0;
-int sensor5 = 0;
-int sensor6 = 0;
-int sensor7 = 0;
 
 int main(void)
 {
@@ -101,6 +90,12 @@ int main(void)
 
     network_init_mac(net_conf_get_mac());
 
+    // init temp array
+    for( i = 0; i < NUM_TEMP_SENSORS; i++)
+    {
+        temp_sensors[i] = 0;
+    }
+
     if (net_conf_is_dhcpc())
     {
         // setup the dhcp renew timer the make the first request
@@ -112,7 +107,7 @@ int main(void)
     // start hosted services
     telnetd_init();
     httpd_init();
-	a2dInit();
+	//a2dInit();
 	USART_Init(95);
 	sendString("\E[H\E[J");
 	sendString("Booting Biomass Ethernet\r\n");

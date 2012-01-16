@@ -1,6 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "uart.h"
+#include "uart-t.h"
 
 //Initialize the serial port, also called a universal asynchronous receive-transmit port
 void USART_Init( unsigned int ubrr)
