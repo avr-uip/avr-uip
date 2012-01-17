@@ -1,7 +1,7 @@
 #Chip choice
 #MCU		= atmega168
 #CHIP	= m168
-#### larger chip needed for webserver.PROGMEM
+## larger chip needed for webserver.PROGMEM
 MCU = atmega328p
 CHIP   = m328p
 
