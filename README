@@ -11,4 +11,3 @@ doc/      - Documentation
 libs/     - Library code used by some applications and dirvers
 uip/      - uIP TCP/IP stack code
 drivers/  - Drivers for various hardware
-
