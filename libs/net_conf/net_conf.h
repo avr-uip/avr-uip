@@ -2,20 +2,13 @@
 #ifndef __NET_CONF_H__
 #define __NET_CONF_H__
 
-//Mac adress definition for enc28j60
-#define ETHADDR0		0x00
-#define ETHADDR1		0xbd
-#define ETHADDR2		0x3b
-#define ETHADDR3		0x33
-#define ETHADDR4		0x05
-#define ETHADDR5		0x71
 //Mac adress definition for uip
-#define UIP_ETHADDR0    ETHADDR0
-#define UIP_ETHADDR1    ETHADDR1
-#define UIP_ETHADDR2    ETHADDR2
-#define UIP_ETHADDR3    ETHADDR3
-#define UIP_ETHADDR4    ETHADDR4
-#define UIP_ETHADDR5    ETHADDR5
+#define UIP_ETHADDR0    0x00
+#define UIP_ETHADDR1    0xbd
+#define UIP_ETHADDR2    0x3b
+#define UIP_ETHADDR3    0x33
+#define UIP_ETHADDR4    0x05
+#define UIP_ETHADDR5    0x71
 
 #define USE_DHCP 0
 #define UIP_IPADDR0 192
