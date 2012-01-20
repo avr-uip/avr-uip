@@ -196,32 +196,3 @@ void uip_log(char *m)
 
 /*---------------------------------------------------------------------------*/
 
-
-/*---------------------------------------------------------------------------*/
-
-
-void dhcpc_configured(const struct dhcpc_state *s)
-{
-//led_low();
-    net_conf_set_ip_ipaddr(s->ipaddr);
-
-    net_conf_set_nm_ipaddr(s->netmask);
-
-    net_conf_set_gw_ipaddr(s->default_router);
-
-    net_conf_uip_set();
-
-//  code to use dhcp server lease time removed due to uint16_t overflow
-//  issues with calculating the time.   
-//  just do the reset in the main loop.
-// WARNING, if you reset a the dhcp timer here and in main you will have
-// issues where the timer keeps showing as expired :-\
-
-#ifdef DHCP_DEBUG
-    // for now turn on the led when we get an ip
-    led_high();
-#endif
-
-}
-
-/*---------------------------------------------------------------------------*/

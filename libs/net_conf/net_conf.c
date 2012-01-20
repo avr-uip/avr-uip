@@ -390,3 +390,27 @@ void net_conf_load(void)
     // load the mac here
     eeprom_read_block ((void *)net_conf_eth_addr, (const void *)&ee_eth_addr,6);
 }
+
+/*---- START DHCP directly supported in net_conf ----*/
+#ifdef __DHCPC_H__
+#warning "DHCP SUPPORT IS ON IN LIB NET_CONF"
+void dhcpc_configured(const struct dhcpc_state *s)
+{
+    net_conf_set_ip_ipaddr(s->ipaddr);
+
+    net_conf_set_nm_ipaddr(s->netmask);
+
+    net_conf_set_gw_ipaddr(s->default_router);
+
+    net_conf_uip_set();
+
+//  code to use dhcp server lease time removed due to uint16_t overflow
+//  issues with calculating the time.   
+//  just do the reset in the main loop.
+// WARNING, if you reset a the dhcp timer here and in main you will have
+// issues where the timer keeps showing as expired :-\
+
+}
+
+/*---- END - DHCP directly supported in net_conf ----*/
+#endif
