@@ -36,6 +36,7 @@
 #include "timer.h"
 #include "pt.h"
 
+
 struct dhcpc_state {
   struct pt pt;
   u8_t state;
@@ -52,6 +53,9 @@ struct dhcpc_state {
   u16_t netmask[2];
   u16_t dnsaddr[2];
   u16_t default_router[2];
+#ifdef __NTPCLIENT_H__
+  u16_t ntpaddr[2];
+#endif
 };
 
 void dhcpc_init(const void *mac_addr, uint8_t mac_len);

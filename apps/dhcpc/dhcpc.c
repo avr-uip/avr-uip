@@ -36,9 +36,9 @@
 #include <string.h>
 
 #include "uip.h"
-#include "dhcpc.h"
 #include "timer.h"
 #include "pt.h"
+#include "dhcpc.h"
 
 #if defined PORT_APP_MAPPER
 bool dhcpc_running = 0; 
@@ -98,6 +98,7 @@ static uint8_t msg_type;
 #define DHCP_OPTION_SUBNET_MASK   1
 #define DHCP_OPTION_ROUTER        3
 #define DHCP_OPTION_DNS_SERVER    6
+#define DHCP_OPTION_NTP_SERVER   42
 #define DHCP_OPTION_REQ_IPADDR   50
 #define DHCP_OPTION_LEASE_TIME   51
 #define DHCP_OPTION_MSG_TYPE     53
@@ -235,6 +236,11 @@ parse_options(u8_t *optptr, uint16_t len)
     case DHCP_OPTION_LEASE_TIME:
       memcpy(s.lease_time, optptr + 2, 4);
       break;
+#ifdef __NTPCLIENT_H__
+    case DHCP_OPTION_NTP_SERVER:
+      memcpy(s.ntpaddr, optptr + 2, 4);
+      break; 
+#endif
     case DHCP_OPTION_END:
       return type;
     }

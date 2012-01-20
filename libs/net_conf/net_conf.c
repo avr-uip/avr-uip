@@ -402,6 +402,8 @@ void dhcpc_configured(const struct dhcpc_state *s)
 
     net_conf_set_gw_ipaddr(s->default_router);
 
+//NEED NTP SERVER IN HERE...
+
     net_conf_uip_set();
 
 //  code to use dhcp server lease time removed due to uint16_t overflow
