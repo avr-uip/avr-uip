@@ -11,6 +11,7 @@ HTTPD_FS_DIRNAME = httpd-fs-halfmoon_tech.1284
 #Compiled apps
 APPS    = webserver.PROGMEM port_app_mapper
 APPS += telnetd dhcpc 
+#APPS += ntpclient
 #APPS += resolv
 #APPS += webclient.PROGMEM
 

@@ -8,6 +8,8 @@
 
 //Define frequency
 #define F_CPU 14745600UL
+
+#if 0
 //Mac adress definition for enc28j60
 #define ETHADDR0		0x00
 #define ETHADDR1		0xbd
@@ -22,7 +24,9 @@
 #define UIP_ETHADDR3    ETHADDR3
 #define UIP_ETHADDR4    ETHADDR4
 #define UIP_ETHADDR5    ETHADDR5
+#endif
 
+#if 0
 // ENC28J60 SPI port
 #define ENC28J60_SPI_PORT               PORTB
 #define ENC28J60_SPI_DDR                DDRB
@@ -42,6 +46,7 @@
 #define ENC28J60_CONTROL_PORT   PORTB
 #define ENC28J60_CONTROL_DDR    DDRB
 
+#endif
 
 //Include uip.h gives all the uip configurations in uip-conf.h
 #include "uip.h"
