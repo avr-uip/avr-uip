@@ -127,7 +127,7 @@ static const uip_ipaddr_t all_zeroes_addr =
 #endif /* UIP_CONF_IPV6 */
 
 
-#if UIP_FIXEDETHADDR
+#if UIP_FIXEDETHADDR  > 0
 const struct uip_eth_addr uip_ethaddr = {{UIP_ETHADDR0,
 					  UIP_ETHADDR1,
 					  UIP_ETHADDR2,
