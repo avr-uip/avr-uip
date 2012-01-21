@@ -13,34 +13,42 @@
 #include <ctype.h>
 
 
-
-//EEPROM parameters (TCP/IP parameters)
-uint8_t EEMEM ee_enable_dhcp=USE_DHCP;
-
-uint8_t EEMEM ee_eth_addr[6]=
-   {UIP_ETHADDR0,UIP_ETHADDR1,UIP_ETHADDR2,UIP_ETHADDR3,UIP_ETHADDR4,UIP_ETHADDR5};
-
-uint8_t EEMEM ee_ip_addr[4]= 
-      {UIP_IPADDR0, UIP_IPADDR1, UIP_IPADDR2, UIP_IPADDR3};
-
-uint8_t EEMEM ee_net_mask[4]= 
-        {UIP_NETMASK0, UIP_NETMASK1, UIP_NETMASK2, UIP_NETMASK3};
-
-uint8_t EEMEM ee_gateway[4]=
-        {UIP_DRIPADDR0, UIP_DRIPADDR1, UIP_DRIPADDR2, UIP_DRIPADDR3};
-
 // TCP/IP parameters in data memory
 uint8_t net_conf_enable_dhcp;
 uint8_t net_conf_eth_addr[6];
 uint8_t net_conf_ip_addr[4];
 uint8_t net_conf_net_mask[4];
 uint8_t net_conf_gateway[4];
-uint8_t net_conf_four_bytes[4];
+// MAY WANT TO COME BACK AND LOOK AT THIS IF 12 BYTES are needed...
+uint8_t net_conf_dns_addr[4];
+uint8_t net_conf_ntp_addr[4];
+uint8_t net_conf_ntp_tz[4]; // just to keep it with the other data
 
+//EEPROM parameters (TCP/IP parameters)
+//
+// The following defines must stay in order
+// or you will loose your settings on upgrade
+//
+#ifndef NET_CONF_EEMEM_BASE
+#define NET_CONF_EEMEM_BASE 0x0E  // after serial number, flags, and upgrade server ip allocation space
+#endif
+// add to the END of the list!
+#define NET_CONF_EEMEM_ENABLE_DHCP NET_CONF_EEMEM_BASE
+#define NET_CONF_EEMEM_ETH_ADDR    NET_CONF_EEMEM_ENABLE_DHCP + sizeof(net_conf_enable_dhcp)
+#define NET_CONF_EEMEM_IP_ADDR     NET_CONF_EEMEM_ETH_ADDR + sizeof(net_conf_eth_addr)
+#define NET_CONF_EEMEM_NET_MASK    NET_CONF_EEMEM_IP_ADDR + sizeof(net_conf_ip_addr)
+#define NET_CONF_EEMEM_GATEWAY     NET_CONF_EEMEM_NET_MASK + sizeof(net_conf_net_mask)
+#define NET_CONF_EEMEM_DNS_ADDR    NET_CONF_EEMEM_GATEWAY + sizeof(net_conf_gateway)
+#define NET_CONF_EEMEM_NTP_ADDR    NET_CONF_EEMEM_DNS_ADDR + sizeof(net_conf_dns_addr)
+#define NET_CONF_EEMEM_NTP_TZ      NET_CONF_EEMEM_NTP_ADDR + sizeof(net_conf_ntp_addr)
+
+bool init_load_done = 0;
+uint8_t net_conf_four_bytes[4];
 static struct uip_eth_addr  my_eth_addr = { .addr = {UIP_ETHADDR0,UIP_ETHADDR1,
                                                      UIP_ETHADDR2,UIP_ETHADDR3,
-												     UIP_ETHADDR4,UIP_ETHADDR5}};
-bool init_load_done = 0;
+                                                     UIP_ETHADDR4,UIP_ETHADDR5}};
+
+
 
 void net_conf_uip_set(void)
 {
@@ -71,37 +79,44 @@ int net_conf_init(void)
 //net_conf_enable_dhcp=0;
 
     if ((net_conf_enable_dhcp != 1) &&
-		(net_conf_enable_dhcp != 0))
+        (net_conf_enable_dhcp != 0))
     {   // if the setting is invalid, enable by default
 #if UIP_CONF_BROADCAST == 1
         net_conf_enable_dhcp = 1;
 #else
-		net_conf_enable_dhcp = 0;
+        net_conf_enable_dhcp = 0;
 #endif
-		// update the eeprom with the correct data
-		net_conf_save();
+        // update the eeprom with the correct data
+        net_conf_save();
     }
 
     // if the mac address in eeprom looks bad, use the defaults
-    if(net_conf_eth_addr[0] == 0xff)
+    if((net_conf_eth_addr[0] == 0xff) ||
+       (
+        (net_conf_eth_addr[0] == 0x00) &&
+        (net_conf_eth_addr[1] == 0x00) &&
+        (net_conf_eth_addr[2] == 0x00) &&
+        (net_conf_eth_addr[3] == 0x00) &&
+        (net_conf_eth_addr[4] == 0x00) &&
+        (net_conf_eth_addr[5] == 0x00)))
     {
-		net_conf_eth_addr[0] = UIP_ETHADDR0;
-		net_conf_eth_addr[1] = UIP_ETHADDR1;
-		net_conf_eth_addr[2] = UIP_ETHADDR2;
-		net_conf_eth_addr[3] = UIP_ETHADDR3;
-		net_conf_eth_addr[4] = UIP_ETHADDR4;
-		net_conf_eth_addr[5] = UIP_ETHADDR5;
-		net_conf_mac_save();
-	}
+        net_conf_eth_addr[0] = UIP_ETHADDR0;
+        net_conf_eth_addr[1] = UIP_ETHADDR1;
+        net_conf_eth_addr[2] = UIP_ETHADDR2;
+        net_conf_eth_addr[3] = UIP_ETHADDR3;
+        net_conf_eth_addr[4] = UIP_ETHADDR4;
+        net_conf_eth_addr[5] = UIP_ETHADDR5;
+        net_conf_mac_save();
+    }
 
-	my_eth_addr.addr[0] = net_conf_eth_addr[0];
-	my_eth_addr.addr[1] = net_conf_eth_addr[1];
-	my_eth_addr.addr[2] = net_conf_eth_addr[2];
-	my_eth_addr.addr[3] = net_conf_eth_addr[3];
-	my_eth_addr.addr[4] = net_conf_eth_addr[4];
-	my_eth_addr.addr[5] = net_conf_eth_addr[5];
+    my_eth_addr.addr[0] = net_conf_eth_addr[0];
+    my_eth_addr.addr[1] = net_conf_eth_addr[1];
+    my_eth_addr.addr[2] = net_conf_eth_addr[2];
+    my_eth_addr.addr[3] = net_conf_eth_addr[3];
+    my_eth_addr.addr[4] = net_conf_eth_addr[4];
+    my_eth_addr.addr[5] = net_conf_eth_addr[5];
 
-	uip_setethaddr(my_eth_addr);
+    uip_setethaddr(my_eth_addr);
 
     if (!net_conf_enable_dhcp)
     {
@@ -113,37 +128,40 @@ int net_conf_init(void)
         }
         else
         {
-			// ip in flash didn't look good... use default
+            // ip in flash didn't look good... use default
             uip_ipaddr(ipaddr, UIP_IPADDR0, UIP_IPADDR1,
-			                   UIP_IPADDR2, UIP_IPADDR3);
+                               UIP_IPADDR2, UIP_IPADDR3);
             uip_sethostaddr(ipaddr);
-			net_conf_ip_addr[0] = UIP_IPADDR0;
-			net_conf_ip_addr[1] = UIP_IPADDR1;
-			net_conf_ip_addr[2] = UIP_IPADDR2;
-			net_conf_ip_addr[3] = UIP_IPADDR3;
+
+            net_conf_ip_addr[0] = UIP_IPADDR0;
+            net_conf_ip_addr[1] = UIP_IPADDR1;
+            net_conf_ip_addr[2] = UIP_IPADDR2;
+            net_conf_ip_addr[3] = UIP_IPADDR3;
 
             uip_ipaddr(ipaddr, UIP_DRIPADDR0, UIP_DRIPADDR1,
-			                   UIP_DRIPADDR2, UIP_DRIPADDR3);
+                               UIP_DRIPADDR2, UIP_DRIPADDR3);
             uip_setdraddr(ipaddr);
-			net_conf_gateway[0] = UIP_DRIPADDR0;
-			net_conf_gateway[1] = UIP_DRIPADDR1;
-			net_conf_gateway[2] = UIP_DRIPADDR2;
-			net_conf_gateway[3] = UIP_DRIPADDR3;
+
+            net_conf_gateway[0] = UIP_DRIPADDR0;
+            net_conf_gateway[1] = UIP_DRIPADDR1;
+            net_conf_gateway[2] = UIP_DRIPADDR2;
+            net_conf_gateway[3] = UIP_DRIPADDR3;
 
             uip_ipaddr(ipaddr, UIP_NETMASK0, UIP_NETMASK1,
-			                   UIP_NETMASK2, UIP_NETMASK3);
+                               UIP_NETMASK2, UIP_NETMASK3);
             uip_setnetmask(ipaddr);
-			net_conf_net_mask[0] = UIP_NETMASK0;
-			net_conf_net_mask[1] = UIP_NETMASK1;
-			net_conf_net_mask[2] = UIP_NETMASK2;
-			net_conf_net_mask[3] = UIP_NETMASK3;
 
-			// update the eeprom with the correct data
-			net_conf_save();
+            net_conf_net_mask[0] = UIP_NETMASK0;
+            net_conf_net_mask[1] = UIP_NETMASK1;
+            net_conf_net_mask[2] = UIP_NETMASK2;
+            net_conf_net_mask[3] = UIP_NETMASK3;
+
+            // update the eeprom with the correct data
+            net_conf_save();
         }
     }
 
-	return 0;
+    return 0;
 }
 
 //
@@ -358,16 +376,15 @@ void net_conf_save(void)
 // update functions write if data is different
 #if defined(eeprom_update_block)
     // added to avr-lib @ version 1.6.7
-    eeprom_update_block ((const void *)net_conf_ip_addr, (void *)&ee_ip_addr,4);
-    eeprom_update_block ((const void *)net_conf_net_mask,(void *)&ee_net_mask,4);
-    eeprom_update_block ((const void *)net_conf_gateway, (void *)&ee_gateway,4); 
-	eeprom_update_byte  (&ee_enable_dhcp, net_conf_enable_dhcp);
+    eeprom_update_block ((const void *)net_conf_ip_addr, (void *)NET_CONF_EEMEM_IP_ADDR,4);
+    eeprom_update_block ((const void *)net_conf_net_mask,(void *)NET_CONF_EEMEM_NET_MASK,4);
+    eeprom_update_block ((const void *)net_conf_gateway, (void *)NET_CONF_EEMEM_GATEWAY,4); 
+    eeprom_update_byte  ((uint8_t *)NET_CONF_EEMEM_ENABLE_DHCP, net_conf_enable_dhcp);
 #else
-    eeprom_write_block ((const void *)net_conf_ip_addr, (void *)&ee_ip_addr,4);
-    eeprom_write_block ((const void *)net_conf_net_mask,(void *)&ee_net_mask,4);
-    eeprom_write_block ((const void *)net_conf_gateway, (void *)&ee_gateway,4); 
-    eeprom_write_block ((const void *)net_conf_gateway, (void *)&ee_gateway,4); 
-	eeprom_write_byte  (&ee_enable_dhcp, net_conf_enable_dhcp);
+    eeprom_write_block ((const void *)net_conf_ip_addr, (void *)NET_CONF_EEMEM_IP_ADDR,4);
+    eeprom_write_block ((const void *)net_conf_net_mask,(void *)NET_CONF_EEMEM_NET_MASK,4);
+    eeprom_write_block ((const void *)net_conf_gateway, (void *)NET_CONF_EEMEM_GATEWAY,4); 
+    eeprom_write_byte  ((uint8_t *)NET_CONF_EEMEM_ENABLE_DHCP, net_conf_enable_dhcp);
 #endif
 	// note we don't write the mac here.
 }
@@ -376,19 +393,20 @@ void net_conf_save(void)
 // split out saving the mac address since it shouldn't be changed
 void net_conf_mac_save(void)
 {
-    eeprom_write_block ((const void *)net_conf_eth_addr, (void *)&ee_eth_addr,6);
+    eeprom_write_block ((const void *)net_conf_eth_addr, (void *)NET_CONF_EEMEM_ETH_ADDR,6);
 }
 
 
 void net_conf_load(void)
 {
-    eeprom_read_block ((void *)net_conf_ip_addr, (const void *)&ee_ip_addr,4);
-    eeprom_read_block ((void *)net_conf_net_mask, (const void *)&ee_net_mask,4);
-    eeprom_read_block ((void *)net_conf_gateway,(const void *)&ee_gateway,4);
-    net_conf_enable_dhcp = eeprom_read_byte(&ee_enable_dhcp);
+    eeprom_read_block ((void *)net_conf_ip_addr, (const void *)NET_CONF_EEMEM_IP_ADDR,4);
+    eeprom_read_block ((void *)net_conf_net_mask, (const void *)NET_CONF_EEMEM_NET_MASK,4);
+    eeprom_read_block ((void *)net_conf_gateway,(const void *)NET_CONF_EEMEM_GATEWAY,4);
+    //net_conf_enable_dhcp = eeprom_read_byte(&eemem_enable_dhcp);
+    net_conf_enable_dhcp = eeprom_read_byte((uint8_t *)NET_CONF_EEMEM_ENABLE_DHCP);
 
     // load the mac here
-    eeprom_read_block ((void *)net_conf_eth_addr, (const void *)&ee_eth_addr,6);
+    eeprom_read_block ((void *)net_conf_eth_addr, (const void *)NET_CONF_EEMEM_ETH_ADDR,6);
 }
 
 /*---- START DHCP directly supported in net_conf ----*/
