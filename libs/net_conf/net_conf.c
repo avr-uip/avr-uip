@@ -30,7 +30,7 @@ uint8_t net_conf_ntp_tz[4]; // just to keep it with the other data
 // or you will loose your settings on upgrade
 //
 #ifndef NET_CONF_EEMEM_BASE
-#define NET_CONF_EEMEM_BASE 0x0E  // after serial number, flags, and upgrade server ip allocation space
+#define NET_CONF_EEMEM_BASE 0x010  // after serial number, flags, and upgrade server ip allocation space
 #endif
 // add to the END of the list!
 #define NET_CONF_EEMEM_ENABLE_DHCP NET_CONF_EEMEM_BASE
