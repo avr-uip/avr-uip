@@ -1,5 +1,6 @@
 APP_SOURCES += httpd.c http-strings.c httpd-fs.c httpd-cgi.c websrv_helper_functions.c
-LIBS += websrv_helper_functions webstrings_common.PROGMEM
+LIBS += websrv_helper_functions 
+LIBS += webstrings_common.PROGMEM
 
 
 ################
