@@ -435,7 +435,9 @@
  * This function must be implemented by the module that uses uIP, and
  * is called by uIP whenever a log message is generated.
  */
+#ifndef uip_log
 void uip_log(char *msg);
+#endif
 
 /**
  * The link level header length.
