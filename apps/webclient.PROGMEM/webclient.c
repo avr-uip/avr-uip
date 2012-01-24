@@ -81,6 +81,14 @@
 #define ISO_space    0x20
 
 
+#if UIP_CONF_LOGGING == 1
+extern void uip_log(char*);
+extern void uip_log_P(prog_char*);
+#else
+#define uip_log(char*) {}
+#define uip_log_P(prog_char*) {}
+#endif
+
 static struct webclient_state s;
 
 /*-----------------------------------------------------------------------------------*/
@@ -249,8 +257,6 @@ acked(void)
 }
 /*-----------------------------------------------------------------------------------*/
 char *uip_appdata_ptr;
-extern void uip_log(char*);
-extern void uip_log_P(prog_char*);
 /*-----------------------------------------------------------------------------------*/
 static u16_t
 parse_statusline(u16_t len)
