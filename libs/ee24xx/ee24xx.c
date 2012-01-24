@@ -20,6 +20,10 @@
  * builtin TWI interface of an ATmega device.
  */
 
+/*
+ * MOD example code into a lib for use in avr-uip project
+ */
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,32 +33,6 @@
 
 #define DEBUG 1
 
-/*
- * System clock in Hz.
- */
-#define F_CPU 14745600UL	/* Note [2] */
-
-/*
- * Compatibility defines.  This should work on ATmega8, ATmega16,
- * ATmega163, ATmega323 and ATmega128 (IOW: on all devices that
- * provide a builtin TWI interface).
- *
- * On the 128, it defaults to USART 1.
- */
-#ifndef UCSRB
-# ifdef UCSR1A		/* ATmega128 */
-#  define UCSRA UCSR1A
-#  define UCSRB UCSR1B
-#  define UBRR UBRR1L
-#  define UDR UDR1
-# else /* ATmega8 */
-#  define UCSRA USR
-#  define UCSRB UCR
-# endif
-#endif
-#ifndef UBRR
-#  define UBRR UBRRL
-#endif
 
 /*
  * Note [3]
@@ -73,7 +51,7 @@
  * Larger EEPROM devices (from 24C32) have 16-bit address
  * Define or undefine according to the used device
  */
-//#define WORD_ADDRESS_16BIT
+#define WORD_ADDRESS_16BIT // enable by default as avr-uip plans to use large chips.
 
 /*
  * Maximal number of iterations to wait for a device to respond for a
@@ -105,30 +83,11 @@
 uint8_t twst;
 
 /*
- * Do all the startup-time peripheral initializations: UART (for our
- * debug/test output), and TWI clock.
+ * init TWI clock.
  */
 void
-ioinit(void)
+ee24xx_twi_init(void)
 {
-
-#if F_CPU <= 1000000UL
-  /*
-   * Note [4]
-   * Slow system clock, double Baud rate to improve rate error.
-   */
-  UCSRA = _BV(U2X);
-  UBRR = (F_CPU / (8 * 9600UL)) - 1; /* 9600 Bd */
-#else
-  UBRR = (F_CPU / (16 * 9600UL)) - 1; /* 9600 Bd */
-#endif
-  UCSRB = _BV(TXEN);		/* tx enable */
-
-  /* initialize TWI clock: 100 kHz clock, TWPS = 0 => prescaler = 1 */
-#if defined(TWPS0)
-  /* has prescaler (mega128 & newer) */
-  TWSR = 0;
-#endif
 
 #if F_CPU < 3600000UL
   TWBR = 10;			/* smallest TWBR value, see note [5] */
@@ -137,21 +96,6 @@ ioinit(void)
 #endif
 }
 
-/*
- * Note [6]
- * Send character c down the UART Tx, wait until tx holding register
- * is empty.
- */
-int
-uart_putchar(char c, FILE *unused)
-{
-
-  if (c == '\n')
-    uart_putchar('\r', 0);
-  loop_until_bit_is_set(UCSRA, UDRE);
-  UDR = c;
-  return 0;
-}
 
 /*
  * Note [7]
@@ -522,60 +466,3 @@ ee24xx_write_bytes(uint16_t eeaddr, int len, uint8_t *buf)
   return total;
 }
 
-void
-error(void)
-{
-
-  printf("error: TWI status %#x\n", twst);
-  exit(0);
-}
-
-FILE mystdout = FDEV_SETUP_STREAM(uart_putchar, NULL, _FDEV_SETUP_WRITE);
-
-void
-main(void)
-{
-  uint16_t a;
-  int rv;
-  uint8_t b[16];
-  uint8_t x;
-
-  ioinit();
-
-  stdout = &mystdout;
-
-  for (a = 0; a < 256;)
-    {
-      printf("%#04x: ", a);
-      rv = ee24xx_read_bytes(a, 16, b);
-      if (rv <= 0)
-	error();
-      if (rv < 16)
-	printf("warning: short read %d\n", rv);
-      a += rv;
-      for (x = 0; x < rv; x++)
-	printf("%02x ", b[x]);
-      putchar('\n');
-    }
-#define EE_WRITE(addr, str) ee24xx_write_bytes(addr, sizeof(str)-1, str)
-  rv = EE_WRITE(55, "The quick brown fox jumps over the lazy dog.");
-  if (rv < 0)
-    error();
-  printf("Wrote %d bytes.\n", rv);
-  for (a = 0; a < 256;)
-    {
-      printf("%#04x: ", a);
-      rv = ee24xx_read_bytes(a, 16, b);
-      if (rv <= 0)
-	error();
-      if (rv < 16)
-	printf("warning: short read %d\n", rv);
-      a += rv;
-      for (x = 0; x < rv; x++)
-	printf("%02x ", b[x]);
-      putchar('\n');
-    }
-
-  printf("done.\n");
-
-}

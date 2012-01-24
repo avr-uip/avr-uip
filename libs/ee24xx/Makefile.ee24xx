@@ -1,0 +1,1 @@
+LIB_SOURCES += ee24xx.c
