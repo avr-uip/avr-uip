@@ -203,7 +203,6 @@ void enc28j60clkout(uint8_t clk)
 
 void enc28j60Init(uint8_t* macaddr)
 {
-		uint16_t temp;
 	// initialize I/O
         // ss as output:
 	ENC28J60_CONTROL_DDR |= 1<<ENC28J60_CONTROL_CS;
