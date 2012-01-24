@@ -80,13 +80,16 @@
 #define ISO_cr       0x0d
 #define ISO_space    0x20
 
+#if defined PORT_APP_MAPPER
+    #warning "Webclient may only connect to port 80 on remote hosts when using port_app_mapper"
+#endif
 
 #if UIP_CONF_LOGGING == 1
 extern void uip_log(char*);
 extern void uip_log_P(prog_char*);
 #else
-#define uip_log(char*) {}
-#define uip_log_P(prog_char*) {}
+#define uip_log(A) {}
+#define uip_log_P(A) {}
 #endif
 
 static struct webclient_state s;

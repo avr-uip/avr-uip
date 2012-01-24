@@ -504,6 +504,7 @@ void resolv_found(char *name, u16_t *ipaddr)
 {
   char ip[60];
 
+#if 0
   sendString("\r\nresolv found: ");
   if (ipaddr == NULL)
   {
@@ -519,7 +520,7 @@ void resolv_found(char *name, u16_t *ipaddr)
     sendString(ip);
   }
   sendString("\r\n");
-
+#endif
   // Apps should just poll resolv_lookup(char *name) as it takes time to 
   // resolve the host name to an IP
 }

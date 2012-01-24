@@ -9,11 +9,13 @@ NAME    = halfmoon_tech
 HTTPD_FS_DIRNAME = httpd-fs-halfmoon_tech.1284
 
 #Compiled apps
-APPS    = webserver.PROGMEM port_app_mapper
-APPS += telnetd dhcpc 
+APPS  = port_app_mapper
+#APPS += webserver.PROGMEM
+APPS += telnetd 
+APPS += dhcpc 
 #APPS += ntpclient
-#APPS += resolv
-#APPS += webclient.PROGMEM
+APPS += resolv
+APPS += webclient.PROGMEM
 
 #Compiled drivers
 DEVS	+= enc28j60.tux #The rest are determined by makefiles for apps

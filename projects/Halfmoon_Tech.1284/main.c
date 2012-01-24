@@ -106,7 +106,7 @@ int main(void)
 
     // start hosted services
     telnetd_init();
-    httpd_init();
+    //httpd_init();
 	//a2dInit();
 	USART_Init(95);
 	sendString("\E[H\E[J");
@@ -196,3 +196,29 @@ void uip_log(char *m)
 
 /*---------------------------------------------------------------------------*/
 
+void
+webclient_closed(void)
+{
+	//printf("Webclient: connection closed\n");
+}
+void
+webclient_aborted(void)
+{
+	//printf("Webclient: connection aborted\n");
+}
+void
+webclient_timedout(void)
+{
+	//printf("Webclient: connection timed out\n");
+}
+void
+webclient_connected(void)
+{
+	//printf("Webclient: connected, waiting for data...\n");
+}
+void
+webclient_datahandler(char *data, u16_t len)
+{
+	//printf("Webclient: got %d bytes of data.\n", len);
+}
+/*---------------------------------------------------------------------------*/
