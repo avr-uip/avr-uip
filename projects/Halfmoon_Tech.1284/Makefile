@@ -21,6 +21,7 @@ DEVS	+= enc28j60.tux #The rest are determined by makefiles for apps
 #Compiled libs
 #LIBS	+= misc 1wire analog eeprom uart 
 LIBS += net_conf
+#LIBS += ee24xx
 
 #Project specific files
 $(NAME)_SOURCES = main.c clock-arch.c uart.c 
