@@ -52,25 +52,36 @@
 
 #define WEBCLIENT_CONF_MAX_URLLEN 100
 
+#ifndef WEBCLIENT_CONF_MAX_HTTP_LEADER
+#define WEBCLIENT_CONF_MAX_HTTP_LEADER 80
+#endif
+
+#ifndef WEBCLIENT_CONF_MAX_HOST_LEN
+#define WEBCLIENT_CONF_MAX_HOST_LEN 40
+#endif
+
+#if !defined(UIP_CONF_LOGGING) ||  UIP_CONF_LOGGING != 1
+void uip_log(char *m) {}
+void uip_log_P(char *m) {}
+#endif
+
 struct webclient_state {
   u8_t timer;
   u8_t state;
   u8_t httpflag;
 
   u16_t port;
-  char host[40];
+  char host[WEBCLIENT_CONF_MAX_HOST_LEN];
   char file[WEBCLIENT_CONF_MAX_URLLEN];
   u16_t getrequestptr;
   u16_t getrequestleft;
   
-  char httpheaderline[80];
+  char httpheaderline[WEBCLIENT_CONF_MAX_HTTP_LEADER];
   u16_t httpheaderlineptr;
 
   char mimetype[32];
 };
 
-typedef struct webclient_state uip_tcp_appstate_t;
-#define UIP_APPCALL webclient_appcall
 
 /**
  * Callback function that is called from the webclient code when HTTP
@@ -222,7 +233,18 @@ char *webclient_hostname(void);
  */
 unsigned short webclient_port(void);
 
+#if defined PORT_APP_MAPPER
+        #define WEBCLIENT_APP_CALL_MAP {webclient_appcall, 0, 80},
+        struct httpd_state httpd_state_list[HTTPD_MAX_CONNECTIONS];
+        #warning "Webclient may only connect to port 80 on remote hosts when using port_app_mapper"
+#else
+        #define WEBCLIENT_APP_CALL_MAP
+	typedef struct webclient_state uip_tcp_appstate_t;
+#endif
 
+#ifndef UIP_APPCALL
+#define UIP_APPCALL     webclient_appcall
+#endif
 
 #endif /* __WEBCLIENT_H__ */
 
