@@ -9,21 +9,21 @@ LINT_OPT +=  -weak
 #Include makefiles, directories and CFLAGS for application
 ifdef APPS
   APPDIRS = $(foreach APP, $(APPS), ${APPSDIR}/$(APP))
-  -include $(foreach APP, $(APPS), ${APPSDIR}/$(APP)/Makefile.$(APP))
+  include $(foreach APP, $(APPS), ${APPSDIR}/$(APP)/Makefile.$(APP))
   INCLUDE_FLAGS += $(addprefix -I${APPSDIR}/,$(APPS))
 endif
 
 #Include makefiles, directories and CFLAGS for device drivers
 ifdef DEVS
   DEVDIRS = $(foreach DEV, $(DEVS), ${DEVSDIR}/$(DEV))
-  -include $(foreach DEV, $(DEVS), ${DEVSDIR}/$(DEV)/Makefile.$(DEV))
+  include $(foreach DEV, $(DEVS), ${DEVSDIR}/$(DEV)/Makefile.$(DEV))
   INCLUDE_FLAGS += $(addprefix -I${DEVSDIR}/,$(DEVS))
 endif
 
 #Include makefiles, directories and CFLAGS for libraries
 ifdef LIBS
   LIBDIRS = $(foreach LIB, $(LIBS), ${LIBSDIR}/$(LIB))
-  -include $(foreach LIB, $(LIBS), ${LIBSDIR}/$(LIB)/Makefile.$(LIB))
+  include $(foreach LIB, $(LIBS), ${LIBSDIR}/$(LIB)/Makefile.$(LIB))
   INCLUDE_FLAGS += $(addprefix -I${LIBSDIR}/,$(LIBS))
 endif
 
@@ -34,7 +34,7 @@ INCLUDE_FLAGS += -I$(IDEVDIR) -I$(ILIBDIR) -I$(UIPDIR)
 CFLAGS += $(INCLUDE_FLAGS)
 
 #Define uip sources
--include $(UIPDIR)/Makefile.uip
+include $(UIPDIR)/Makefile.uip
 
 #Define dependency compiler
 ifndef CCDEP
