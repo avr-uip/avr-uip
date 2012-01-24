@@ -24,7 +24,8 @@ LIBS += net_conf
 #LIBS += ee24xx
 
 #Project specific files
-$(NAME)_SOURCES = main.c clock-arch.c uart.c 
+$(NAME)_SOURCES = main.c clock-arch.c uart.c
+#$(NAME)_SOURCES += process_command.c
 
 
 #Include global configurations
