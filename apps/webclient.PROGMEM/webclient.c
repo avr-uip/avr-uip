@@ -60,15 +60,17 @@
 #include "webclient.h"
 #include "resolv.h"
 
+#include "webstrings_common.h"
+
 #include <string.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 
 #define WEBCLIENT_TIMEOUT 100
 
-#define WEBCLIENT_STATE_STATUSLINE 0
-#define WEBCLIENT_STATE_HEADERS    1
-#define WEBCLIENT_STATE_DATA       2
-#define WEBCLIENT_STATE_CLOSE      3
+#define WEBCLIENT_STATE_CLOSE      0
+#define WEBCLIENT_STATE_STATUSLINE 1
+#define WEBCLIENT_STATE_HEADERS    2
+#define WEBCLIENT_STATE_DATA       3
 
 #define HTTPFLAG_NONE   0
 #define HTTPFLAG_OK     1
@@ -122,7 +124,7 @@ webclient_port(void)
 void
 webclient_init(void)
 {
-
+  s.state = WEBCLIENT_STATE_CLOSE;
 }
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -148,8 +150,8 @@ webclient_close(void)
   s.state = WEBCLIENT_STATE_CLOSE;
 }
 /*-----------------------------------------------------------------------------------*/
-unsigned char
-webclient_get(const char *host, u16_t port, const char *file)
+// only called vai the webclient_get functions
+webclient_get_real(const char *host, u16_t port, const char *file)
 {
   struct uip_conn *conn;
   uip_ipaddr_t *ipaddr;
@@ -170,32 +172,39 @@ webclient_get(const char *host, u16_t port, const char *file)
   if(conn == NULL) {
     return 0;
   }
-  
+
+  init_connection();
+
+  return 1;
+}
+
+/*-----------------------------------------------------------------------------------*/
+unsigned char
+webclient_get(const char *host, u16_t port, const char *file)
+{
+  if(s.state != WEBCLIENT_STATE_CLOSE) {
+    return 0;
+  }
+
   s.port = port;
   strncpy(s.file, file, sizeof(s.file));
   strncpy(s.host, host, sizeof(s.host));
-  
-  init_connection();
-  return 1;
+
+  return (webclient_get_real(s.host, s.port, s.file));  
 }
 /*-----------------------------------------------------------------------------------*/
 unsigned char
 webclient_get_P(const prog_char *host, u16_t port, const prog_char *file)
 {
-  unsigned char result;
+  if(s.state != WEBCLIENT_STATE_CLOSE) {
+    return 0;
+  }
 
-  char* buf_host = malloc(strlen_P(host)+1);
-  char* buf_file = malloc(strlen_P(file)+1);
+  s.port = port;
+  strcpy_P(s.host,host);
+  strcpy_P(s.file,file);
 
-  strcpy_P(buf_host,host);
-  strcpy_P(buf_file,file);
-
-  result = webclient_get(buf_host,port,buf_file);
-
-  free (buf_file);
-  free (buf_host);
-
-  return result;
+  return (webclient_get_real(s.host, s.port, s.file));  
 }
 /*-----------------------------------------------------------------------------------*/
 static char *

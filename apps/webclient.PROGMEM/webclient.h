@@ -235,7 +235,6 @@ unsigned short webclient_port(void);
 
 #if defined PORT_APP_MAPPER
     #define WEBCLIENT_APP_CALL_MAP {webclient_appcall, 0, 80},
-    struct webclient_state webclient_state_list[HTTPD_MAX_CONNECTIONS];
 #else
     #define WEBCLIENT_APP_CALL_MAP
     typedef struct webclient_state uip_tcp_appstate_t;

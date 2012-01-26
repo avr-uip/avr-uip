@@ -38,7 +38,7 @@ sub stringify {
   close(OUTPUTC);
   close(OUTPUTH);
 }
-stringify("webstrings_common");
+stringify("webclient-strings");
 
 exit 0;
 
