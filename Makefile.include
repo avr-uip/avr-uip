@@ -6,6 +6,7 @@ INCLUDE_FLAGS += -I.
 
 LINT_OPT +=  -weak
 
+APPS := $(sort $(APPS))
 #Include makefiles, directories and CFLAGS for application
 ifdef APPS
   APPDIRS = $(foreach APP, $(APPS), ${APPSDIR}/$(APP))
@@ -13,6 +14,7 @@ ifdef APPS
   INCLUDE_FLAGS += $(addprefix -I${APPSDIR}/,$(APPS))
 endif
 
+DEVS := $(sort $(DEVS))
 #Include makefiles, directories and CFLAGS for device drivers
 ifdef DEVS
   DEVDIRS = $(foreach DEV, $(DEVS), ${DEVSDIR}/$(DEV))
@@ -20,6 +22,7 @@ ifdef DEVS
   INCLUDE_FLAGS += $(addprefix -I${DEVSDIR}/,$(DEVS))
 endif
 
+LIBS := $(sort $(LIBS))
 #Include makefiles, directories and CFLAGS for libraries
 ifdef LIBS
   LIBDIRS = $(foreach LIB, $(LIBS), ${LIBSDIR}/$(LIB))
@@ -93,7 +96,7 @@ $(NAME)_OBJECTS: ${addprefix $(OBJECTDIR)/, $($(NAME)_SOURCES:.c=.o)}
 ALL_SOURCES = $(sort $(APP_SOURCES) $(UIP_SOURCES) $(DEV_SOURCES) $($(NAME)_SOURCES) $(LIB_SOURCES))
 
 #Rule for building the output files
-$(NAME).out: dev_OBJECTS app_OBJECTS lib_OBJECTS $(NAME)_OBJECTS uip_OBJECTS
+$(NAME).out: dev_OBJECTS uip_OBJECTS lib_OBJECTS app_OBJECTS $(NAME)_OBJECTS
 	$(CC) $(CFLAGS) -o $(OBJECTDIR)/$(NAME).out -Wl $(sort ${addprefix $(OBJECTDIR)/, $(ALL_SOURCES:.c=.o)})
 
 #Rule for building hex file
