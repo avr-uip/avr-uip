@@ -60,6 +60,7 @@
 #include "httpd-fs.h"
 #include "httpd-cgi.h"
 #include "http-strings.h"
+#include "webstrings_common.h"
 
 #include "global-conf.h"
 
@@ -284,37 +285,51 @@ PT_THREAD(send_headers(struct httpd_state *s, const char *statushdr))
   PSOCK_BEGIN(&s->sout);
 
   PSOCK_SEND_PSTR(&s->sout, statushdr);
+  PSOCK_SEND_PSTR(&s->sout, http_crnl);
+  PSOCK_SEND_PSTR(&s->sout, http_content_type);
 
   ptr = strrchr(s->filename, ISO_period);
+//    ptr = strchr(s->filename, ISO_period);
+
 
   if(ptr == NULL) {
-    PSOCK_SEND_PSTR(&s->sout, http_content_type_binary);
-	PSOCK_SEND_PSTR(&s->sout, http_content_length);
-	PSOCK_SEND_STR(&s->sout, s->tmp_str);
-	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+    PSOCK_SEND_PSTR(&s->sout, http_applicationoctet);
+    PSOCK_SEND_PSTR(&s->sout, http_crnl);
+    PSOCK_SEND_PSTR(&s->sout, http_content_length);
+    PSOCK_SEND_STR(&s->sout, s->tmp_str);
   } else if(strncmp_P( ptr,http_html, 5) == 0 ||
-	        strncmp_P( ptr,http_shtml, 6) == 0) {
-    PSOCK_SEND_PSTR(&s->sout, http_content_type_html);
+            strncmp_P( ptr,http_shtml, 6) == 0) {
+    PSOCK_SEND_PSTR(&s->sout, http_texthtml);
   } else if(strncmp_P(ptr,http_css,  4) == 0) {
-    PSOCK_SEND_PSTR(&s->sout, http_content_type_css);
+    PSOCK_SEND_PSTR(&s->sout, http_textcss);
   } else if(strncmp_P(ptr,http_png, 4) == 0) {
-    PSOCK_SEND_PSTR(&s->sout, http_content_type_png);
-	PSOCK_SEND_PSTR(&s->sout, http_content_length);
-	PSOCK_SEND_STR(&s->sout, s->tmp_str);
-	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+    PSOCK_SEND_PSTR(&s->sout, http_imagepng);
+    PSOCK_SEND_PSTR(&s->sout, http_crnl);
+    PSOCK_SEND_PSTR(&s->sout, http_content_length);
+    PSOCK_SEND_STR(&s->sout, s->tmp_str);
   } else if(strncmp_P( ptr, http_gif, 4) == 0) {
-    PSOCK_SEND_PSTR(&s->sout, http_content_type_gif);
-	PSOCK_SEND_PSTR(&s->sout, http_content_length);
-	PSOCK_SEND_STR(&s->sout, s->tmp_str);
-	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+    PSOCK_SEND_PSTR(&s->sout, http_imagegif);
+    PSOCK_SEND_PSTR(&s->sout, http_crnl);
+    PSOCK_SEND_PSTR(&s->sout, http_content_length);
+    PSOCK_SEND_STR(&s->sout, s->tmp_str);
   } else if(strncmp_P( ptr, http_jpg, 4) == 0) {
-    PSOCK_SEND_PSTR(&s->sout, http_content_type_jpg);
-	PSOCK_SEND_PSTR(&s->sout, http_content_length);
-	PSOCK_SEND_STR(&s->sout, s->tmp_str);
-	PSOCK_SEND_PSTR(&s->sout, http_crnlcrln);
+    PSOCK_SEND_PSTR(&s->sout, http_imagejpg);
+    PSOCK_SEND_PSTR(&s->sout, http_crnl);
+    PSOCK_SEND_PSTR(&s->sout, http_content_length);
+    PSOCK_SEND_STR(&s->sout, s->tmp_str);
   } else {
-    PSOCK_SEND_PSTR(&s->sout, http_content_type_plain);
+    PSOCK_SEND_PSTR(&s->sout, http_textplain);
   }
+/*
+  PSOCK_SEND_PSTR(&s->sout, http_crnl);
+  PSOCK_SEND_STR(&s->sout,s->filename);
+  PSOCK_SEND_PSTR(&s->sout, http_crnl);
+  PSOCK_SEND_STR(&s->sout,ptr);
+*/
+  PSOCK_SEND_PSTR(&s->sout, http_crnl);
+  PSOCK_SEND_PSTR(&s->sout, http_connection_close);
+  PSOCK_SEND_PSTR(&s->sout, http_crnl);
+  PSOCK_SEND_PSTR(&s->sout, http_crnl);
 
   PSOCK_END(&s->sout);
 									  												
@@ -629,6 +644,7 @@ void
 httpd_init(void)
 {
 #if PORT_APP_MAPPER
+//sendString("Webserver INIT\r\n");
 	uint8_t index = 0;
 	while (index < HTTPD_MAX_CONNECTIONS)
 	{
