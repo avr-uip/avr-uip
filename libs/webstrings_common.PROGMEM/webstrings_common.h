@@ -2,6 +2,7 @@
 extern const prog_char http_get[5];
 extern const prog_char http_post[5];
 extern const prog_char http_content_type[15];
+extern const prog_char http_location[11];
 extern const prog_char http_content_length[17];
 extern const prog_char http_texthtml[10];
 extern const prog_char http_textcss [9];
@@ -11,7 +12,6 @@ extern const prog_char http_imagepng[10];
 extern const prog_char http_imagegif[10];
 extern const prog_char http_imagejpg[11];
 extern const prog_char http_applicationoctet[25];
-extern const prog_char http_location[11];
 extern const prog_char http_host[7];
 extern const prog_char http_crnl[3];
 extern const prog_char http_index_html[12];
