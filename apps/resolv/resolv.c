@@ -502,9 +502,9 @@ resolv_init(void)
 // this is a do nothing stub as apps are just going to check again and again
 void resolv_found(char *name, u16_t *ipaddr)
 {
+#if 0
   char ip[60];
 
-#if 0
   sendString("\r\nresolv found: ");
   if (ipaddr == NULL)
   {
