@@ -25,14 +25,39 @@
 #define NUM_TEMP_SENSORS 8
 #define NUM_TEMP_READINGS 16
 
+
 // this may need to be a 32 bit number instead
 uint16_t temp_sensors[NUM_TEMP_SENSORS];
+
+
+
+/*
+void read_sensors(void){
+	extern int sensor0, sensor1, sensor2, sensor3, sensor4, sensor5, sensor6, sensor7;
+
+	int ii, iii, sample,temp;
+	for(iii=0;iii<8;iii++){
+		sample=0;
+		for(ii=0;ii<16;ii++){
+			//sample += a2dConvert10bit(iii);
+		}
+		temp = (sample / 16);
+		//temp = convert_adc2far(temp);
+		if(iii==0){sensor0 = temp;}
+		else if(iii==1){sensor1 = temp;}
+		else if(iii==2){sensor2 = temp;}
+		else if(iii==3){sensor3 = temp;}
+		else if(iii==4){sensor4 = temp;}
+		else if(iii==5){sensor5 = temp;}
+		else if(iii==6){sensor6 = temp;}
+		else if(iii==7){sensor7 = temp;}
+	}
 
 int convert_adc2far(int adc_data){
     float ttt;
     ttt = (adc_data * .0048828125 * 100);
     ttt = ttt * 1.8;
-    return (ttt + 32);
+   return (ttt + 32);
 }
 
 void read_sensors(void)
@@ -51,12 +76,20 @@ void read_sensors(void)
         temp_sensors[sensor_index] = sample;
     }
 }
+*/
 
 #define BUF ((struct uip_eth_hdr *)&uip_buf[0])
 struct timer dhcp_timer;
 
 int bob = 986;
 
+
+//uint8_t EEMEM ee_tmp[4]={tt_timber0,tt_timber1,tt_timber2,tt_timber3};
+
+//temp_data[0] = 0x11;
+//temp_data[1] = 0x22;
+//temp_data[2] = 0x33;
+//temp_data[3] = 0x44;
 
 int main(void)
 {
@@ -104,13 +137,22 @@ int main(void)
         dhcpc_request();
     }
 
-    // start hosted services
+	uip_ipaddr_t ipaddr;
+    resolv_init();
+    uip_ipaddr(ipaddr, 8, 8, 8, 8);
+    resolv_conf(ipaddr);
+    webclient_init();
+
+	// start hosted services
     telnetd_init();
-    //httpd_init();
+    httpd_init();
 	//a2dInit();
 	USART_Init(95);
 	sendString("\E[H\E[J");
 	sendString("Booting Biomass Ethernet\r\n");
+	
+	//eeprom_update_byte  (&ee_tmp, net_conf_enable_dhcp);
+	//eeprom_read_block ((void *)temp_data, (const void *)&ee_tmp,4);
 
 	while(1)
     {
@@ -118,7 +160,7 @@ int main(void)
 		if(timer_expired(&sensor_timer))
         {
             timer_reset(&sensor_timer);
-			read_sensors();
+			//read_sensors();
         }
 
 		uip_len = network_read();

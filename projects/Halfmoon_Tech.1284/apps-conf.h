@@ -20,7 +20,7 @@
 // - the max amount of data which may be posted or param in get (bytes)
 #define MAX_PARAM_DATA 100
 #define HTTPD_MAX_CONNECTIONS 4
-//#include "webserver.h"
+#include "webserver.h"
 #include "dhcpc.h"
 #include "resolv.h"
 #include "webclient.h"
