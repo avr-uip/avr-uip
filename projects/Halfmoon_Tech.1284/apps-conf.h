@@ -5,6 +5,8 @@
 
 #define PORT_APP_MAPPER 1
 
+#include "prod_conf.h" // this needs to be here to net_conf moves
+
 //#include "smtp.h"
 //#include "hello-world.h"
 //#include "simple-httpd.h"
