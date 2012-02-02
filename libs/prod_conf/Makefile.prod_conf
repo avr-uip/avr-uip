@@ -1,0 +1,1 @@
+LIB_SOURCES += prod_conf.c
