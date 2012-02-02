@@ -151,6 +151,7 @@ webclient_close(void)
 }
 /*-----------------------------------------------------------------------------------*/
 // only called vai the webclient_get functions
+unsigned char
 webclient_get_real(const char *host, u16_t port, const char *file)
 {
   struct uip_conn *conn;
