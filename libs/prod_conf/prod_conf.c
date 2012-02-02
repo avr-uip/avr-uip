@@ -12,7 +12,8 @@
 
 // TCP/IP parameters in data memory
 uint8_t prod_conf_serial_number[10];
-uint8_t prod_conf_aes_key[32];
+uint8_t prod_conf_firmware_aes_key[16];
+uint8_t prod_conf_server_aes_key[16];
 /*
  * upgrade flags are
  * 0x01 = may upgrade
@@ -33,10 +34,11 @@ uint16_t prod_conf_rev; // source control rev number of current firmware
 #define PROD_CONF_EEMEM_BASE 0x00  // start of serial number, flags, and upgrade server ip allocation space
 #endif
 // add to the END of the list!
-#define PROD_CONF_EEMEM_SERIAL_NUMBER  PROD_CONF_EEMEM_BASE
-#define PROD_CONF_EEMEM_AES_KEY        PROD_CONF_EEMEM_SERIAL_NUMBER + sizeof(prod_conf_serial_number)
-#define PROD_CONF_EEMEM_UPGRADE_FLAGS  PROD_CONF_EEMEM_AES_KEY + sizeof(prod_conf_aes_key)
-#define PROD_CONF_EEMEM_REV            PROD_CONF_EEMEM_UPGRADE_FLAGS + sizeof(prod_conf_upgrade_flags)
+#define PROD_CONF_EEMEM_SERIAL_NUMBER    PROD_CONF_EEMEM_BASE
+#define PROD_CONF_EEMEM_FIRMWARE_AES_KEY PROD_CONF_EEMEM_SERIAL_NUMBER + sizeof(prod_conf_serial_number)
+#define PROD_CONF_EEMEM_SERVER_AES_KEY   PROD_CONF_EEMEM_FIRMWARE_AES_KEY + sizeof(prod_conf_firmware_aes_key)
+#define PROD_CONF_EEMEM_UPGRADE_FLAGS    PROD_CONF_EEMEM_SERVER_AES_KEY + sizeof(prod_conf_server_aes_key)
+#define PROD_CONF_EEMEM_REV              PROD_CONF_EEMEM_UPGRADE_FLAGS + sizeof(prod_conf_upgrade_flags)
 
 uint8_t *prod_conf_get_serial_number (void)
 {
@@ -59,15 +61,26 @@ int8_t prod_conf_get_serial_number_string (char* sn_string, int8_t sn_string_len
                       prod_conf_serial_number[8], prod_conf_serial_number[9]));
 }
 
-void prod_conf_set_aes_key (const uint8_t *new_aes_key)
+void prod_conf_set_firmware_aes_key (const uint8_t *new_aes_key)
 {
-    memcpy(prod_conf_aes_key, new_aes_key, sizeof(prod_conf_aes_key));
+    memcpy(prod_conf_firmware_aes_key, new_aes_key, sizeof(prod_conf_firmware_aes_key));
 }
 
-uint8_t *prod_conf_get_aes_key (void)
+uint8_t *prod_conf_get_firmware_aes_key (void)
 {
-    return(prod_conf_aes_key);
+    return(prod_conf_firmware_aes_key);
 }
+
+void prod_conf_set_server_aes_key (const uint8_t *new_aes_key)
+{
+    memcpy(prod_conf_server_aes_key, new_aes_key, sizeof(prod_conf_server_aes_key));
+}
+
+uint8_t *prod_conf_get_server_aes_key (void)
+{
+    return(prod_conf_server_aes_key);
+}
+
 
 
 // 0 == off , 1 == on 
@@ -99,7 +112,7 @@ void prod_conf_set_rev  (const uint16_t *new_rev)
     prod_conf_rev = *new_rev;
 }
 
-uint16_t *prod_conf_get_rev (void)
+uint16_t prod_conf_get_rev (void)
 {
     return (prod_conf_rev);
 }
@@ -110,12 +123,14 @@ void prod_conf_save(void)
 #if defined(eeprom_update_block)
     // added to avr-lib @ version 1.6.7
     eeprom_update_block ((const void *)prod_conf_serial_number, (void *)PROD_CONF_EEMEM_SERIAL_NUMBER, sizeof(prod_conf_serial_number));
-    eeprom_update_block ((const void *)prod_conf_aes_key,(void *)PROD_CONF_EEMEM_AES_KEY, sizeof(prod_conf_aes_key));
+    eeprom_update_block ((const void *)prod_conf_firmware_aes_key,(void *)PROD_CONF_EEMEM_FIRMWARE_AES_KEY, sizeof(prod_conf_firmware_aes_key));
+    eeprom_update_block ((const void *)prod_conf_server_aes_key,(void *)PROD_CONF_EEMEM_SERVER_AES_KEY, sizeof(prod_conf_server_aes_key));
     eeprom_update_byte  ((uint8_t *)PROD_CONF_EEMEM_UPGRADE_FLAGS, prod_conf_upgrade_flags);
     eeprom_update_word  ((uint16_t *)PROD_CONF_EEMEM_REV, prod_conf_rev);
 #else
     eeprom_write_block ((const void *)prod_conf_serial_number, (void *)PROD_CONF_EEMEM_SERIAL_NUMBER, sizeof(prod_conf_serial_number));
-    eeprom_write_block ((const void *)prod_conf_aes_key,(void *)PROD_CONF_EEMEM_AES_KEY, sizeof(prod_conf_aes_key));
+    eeprom_write_block ((const void *)prod_conf_firmware_aes_key,(void *)PROD_CONF_EEMEM_FIRMWARE_AES_KEY, sizeof(prod_conf_firmware_aes_key));
+    eeprom_write_block ((const void *)prod_conf_server_aes_key,(void *)PROD_CONF_EEMEM_SERVER_AES_KEY, sizeof(prod_conf_server_aes_key));
     eeprom_write_byte  ((uint8_t *)PROD_CONF_EEMEM_UPGRADE_FLAGS, prod_conf_upgrade_flags);
     eeprom_write_word  ((uint16_t *)PROD_CONF_EEMEM_REV, prod_conf_rev);
 #endif
@@ -124,7 +139,8 @@ void prod_conf_save(void)
 void prod_conf_load(void)
 {
     eeprom_read_block ((void *)prod_conf_serial_number, (const void *)PROD_CONF_EEMEM_SERIAL_NUMBER, sizeof(prod_conf_serial_number));
-    eeprom_read_block ((void *)prod_conf_aes_key, (const void *)PROD_CONF_EEMEM_AES_KEY, sizeof(prod_conf_aes_key));
+    eeprom_read_block ((void *)prod_conf_firmware_aes_key, (const void *)PROD_CONF_EEMEM_FIRMWARE_AES_KEY, sizeof(prod_conf_firmware_aes_key));
+    eeprom_read_block ((void *)prod_conf_server_aes_key, (const void *)PROD_CONF_EEMEM_SERVER_AES_KEY, sizeof(prod_conf_server_aes_key));
     prod_conf_upgrade_flags = eeprom_read_byte((uint8_t *)PROD_CONF_EEMEM_UPGRADE_FLAGS);
     prod_conf_rev = eeprom_read_word((uint16_t *)PROD_CONF_EEMEM_REV);
 }

@@ -19,11 +19,13 @@ uint8_t *prod_conf_get_serial_number (void);
 void     prod_conf_set_serial_number (const uint8_t *new_serial_number);
 int8_t   prod_conf_get_serial_number_string (char* sn_string, int8_t sn_string_len);
 
-void     prod_conf_set_aes_key (const uint8_t *new_aes_key);
-uint8_t *prod_conf_get_aes_key (void);
+void     prod_conf_set_firmware_aes_key (const uint8_t *new_aes_key);
+uint8_t *prod_conf_get_firmware_aes_key (void);
+void     prod_conf_set_server_aes_key (const uint8_t *new_aes_key);
+uint8_t *prod_conf_get_server_aes_key (void);
 
 void     prod_conf_set_rev  (const uint16_t *new_rev);
-uint16_t *prod_conf_get_rev (void);
+uint16_t prod_conf_get_rev (void);
 
 void    prod_conf_set_may_upgrade   (uint8_t mode);
 uint8_t prod_conf_may_upgrade       (void);
