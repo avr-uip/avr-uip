@@ -157,10 +157,11 @@ int main(void)
 	while(1)
     {
         
-		if(timer_expired(&sensor_timer))
+        if(timer_expired(&sensor_timer))
         {
             timer_reset(&sensor_timer);
 			//read_sensors();
+            webclient_get_P(PSTR("http://pyroperformances.com/"), 80, PSTR("index.html"));
         }
 
 		uip_len = network_read();
@@ -238,29 +239,4 @@ void uip_log(char *m)
 
 /*---------------------------------------------------------------------------*/
 
-void
-webclient_closed(void)
-{
-	//printf("Webclient: connection closed\n");
-}
-void
-webclient_aborted(void)
-{
-	//printf("Webclient: connection aborted\n");
-}
-void
-webclient_timedout(void)
-{
-	//printf("Webclient: connection timed out\n");
-}
-void
-webclient_connected(void)
-{
-	//printf("Webclient: connected, waiting for data...\n");
-}
-void
-webclient_datahandler(char *data, u16_t len)
-{
-	//printf("Webclient: got %d bytes of data.\n", len);
-}
 /*---------------------------------------------------------------------------*/

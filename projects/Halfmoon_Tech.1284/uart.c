@@ -60,7 +60,7 @@ ISR(USART0_RX_vect){
 	char ReceivedByte;
 	ReceivedByte = UDR; // Fetch the received byte value into the variable "ByteReceived"
 	PORTB = (1<<PORTB3);
-	sendString("Ping\r\n");
+	//sendString("Ping\r\n");
 }
 
 ISR(USART0_TX_vect){

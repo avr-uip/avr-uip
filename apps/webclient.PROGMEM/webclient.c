@@ -202,8 +202,8 @@ webclient_get_P(const prog_char *host, u16_t port, const prog_char *file)
   }
 
   s.port = port;
-  strcpy_P(s.host,host);
-  strcpy_P(s.file,file);
+  strcpy_P(s.host, host);
+  strcpy_P(s.file, file);
 
   return (webclient_get_real(s.host, s.port, s.file));  
 }
@@ -530,6 +530,27 @@ webclient_appcall(void)
   }
 }
 /*-----------------------------------------------------------------------------------*/
-
+#ifndef WEBCLIENT_CALLBACKS_CUSTOM
+void
+webclient_closed(void)
+{
+	//printf("Webclient: connection closed\n");
+}
+void
+webclient_aborted(void)
+{
+	//printf("Webclient: connection aborted\n");
+}
+void
+webclient_timedout(void)
+{
+	//printf("Webclient: connection timed out\n");
+}
+void
+webclient_connected(void)
+{
+	//printf("Webclient: connected, waiting for data...\n");
+}
+#endif
 /** @} */
 /** @} */
