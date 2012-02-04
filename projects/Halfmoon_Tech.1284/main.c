@@ -111,7 +111,7 @@ int main(void)
 
     timer_set(&periodic_timer, CLOCK_SECOND);
     timer_set(&arp_timer, CLOCK_SECOND * 10);
-    timer_set(&sensor_timer, CLOCK_SECOND * 5);
+    timer_set(&sensor_timer, CLOCK_SECOND * 20);
 
     uip_init();
 
@@ -148,7 +148,7 @@ int main(void)
     httpd_init();
 	//a2dInit();
 	USART_Init(95);
-	sendString("\E[H\E[J");
+//	sendString("\E[H\E[J");
 	sendString("Booting Biomass Ethernet\r\n");
 	
 	//eeprom_update_byte  (&ee_tmp, net_conf_enable_dhcp);
@@ -159,9 +159,10 @@ int main(void)
         
         if(timer_expired(&sensor_timer))
         {
+sendString("Calling webclient\r\n");
             timer_reset(&sensor_timer);
 			//read_sensors();
-            webclient_get_P(PSTR("http://pyroperformances.com/"), 80, PSTR("index.html"));
+            webclient_get_P(PSTR("pyroperformances.com"), 80, PSTR("/index.html"));
         }
 
 		uip_len = network_read();
@@ -229,10 +230,17 @@ int main(void)
 }
 
 #if UIP_CONF_LOGGING == 1
+void uip_log_P(char *m)
+{
+    char mstring[100];
+    sprintf_P(mstring, "%s", m);
+    uip_log(m);
+}
+
 void uip_log(char *m)
 {
 //    sendString(m);
-    printf("%s", m);
+    sendString(m);
     //TODO: Get debug information out here somehow, does anybody know a smart way to do that?
 }
 #endif

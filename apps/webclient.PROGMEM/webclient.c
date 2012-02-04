@@ -64,6 +64,7 @@
 
 #include <string.h>
 //#include <stdlib.h>
+#include "uart-t.h"
 
 #define WEBCLIENT_TIMEOUT 100
 
@@ -518,8 +519,10 @@ webclient_appcall(void)
   }
 
   if(uip_closed()) {
+sendString("webclinet: connection closed\r\n");
+/*
     if(s.httpflag != HTTPFLAG_MOVED) {
-      /* Send NULL data to signal EOF. */
+      // Send NULL data to signal EOF.
       webclient_datahandler(NULL, 0);
     } else {
       if(resolv_lookup(s.host) == NULL) {
@@ -527,6 +530,8 @@ webclient_appcall(void)
       }
       webclient_get(s.host, s.port, s.file);
     }
+*/
+    
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -534,22 +539,24 @@ webclient_appcall(void)
 void
 webclient_closed(void)
 {
-	//printf("Webclient: connection closed\n");
+  sendString("Webclient: connection closed\r\n");
 }
 void
 webclient_aborted(void)
 {
-	//printf("Webclient: connection aborted\n");
+  sendString("Webclient: connection aborted\r\n");
+  webclient_close();
 }
 void
 webclient_timedout(void)
 {
-	//printf("Webclient: connection timed out\n");
+  sendString("Webclient: connection timed out\r\n");
+  webclient_close();
 }
 void
 webclient_connected(void)
 {
-	//printf("Webclient: connected, waiting for data...\n");
+  sendString("Webclient: connected, waiting for data...\r\n");
 }
 #endif
 /** @} */
