@@ -139,7 +139,9 @@ init_connection(void)
     sizeof(http_host) - 1 +
     sizeof(http_crnl) - 1 +
     strlen_P(http_user_agent_fields) +
-    strlen(s.file) + strlen(s.host);
+    strlen(s.file) + strlen(s.host) +
+    sizeof(http_crnl) - 1 +
+    sizeof(http_crnl) - 1;
   s.getrequestptr = 0;
 
   s.httpheaderlineptr = 0;
@@ -248,6 +250,8 @@ senddata(void)
 
     cptr = copy_string_P(cptr, http_user_agent_fields,
 		       strlen_P(http_user_agent_fields));
+    cptr = copy_string_P(cptr, http_crnl, sizeof(http_crnl) - 1);
+    cptr = copy_string_P(cptr, http_crnl, sizeof(http_crnl) - 1);
     
     len = s.getrequestleft > uip_mss()?
       uip_mss():
