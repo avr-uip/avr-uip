@@ -151,6 +151,7 @@ void
 webclient_close(void)
 {
   s.state = WEBCLIENT_STATE_CLOSE;
+  uip_close();
 }
 /*-----------------------------------------------------------------------------------*/
 // only called vai the webclient_get functions
