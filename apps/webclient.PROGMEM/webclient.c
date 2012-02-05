@@ -150,7 +150,9 @@ init_connection(void)
 void
 webclient_close(void)
 {
-  s.state = WEBCLIENT_STATE_CLOSE;
+  // clean everything up
+  init_connection();
+  webclient_init();
   uip_close();
 }
 /*-----------------------------------------------------------------------------------*/
@@ -406,12 +408,13 @@ parse_headers(u16_t len)
       if(casecmp_P(s.httpheaderline, http_content_type,
 		     sizeof(http_content_type) - 1) == 0) {
 	/* Found Content-type field. */
-	cptr = strchr(s.httpheaderline, ';');
+	cptr = strchr((s.httpheaderline + sizeof(http_content_type)), ISO_cr);
 	if(cptr != NULL) {
 	  *cptr = 0;
 	}
-	strncpy_P(s.mimetype, s.httpheaderline +
-		sizeof(http_content_type) - 1, sizeof(s.mimetype));
+        snprintf(s.mimetype, sizeof(s.mimetype), "%s",
+                 (s.httpheaderline + sizeof(http_content_type) - 1));        
+
       } else if(casecmp_P(s.httpheaderline, http_location,
 			    sizeof(http_location) - 1) == 0) {
 	cptr = s.httpheaderline +
@@ -432,7 +435,7 @@ parse_headers(u16_t len)
 	  }
 	}
 	strncpy(s.file, cptr, sizeof(s.file));
-	/*	s.file[s.httpheaderlineptr - i] = 0;*/
+	//	s.file[s.httpheaderlineptr - i] = 0;
       }
 
 
@@ -450,7 +453,6 @@ parse_headers(u16_t len)
     uip_log(s.httpheaderline);
       s.httpheaderlineptr = 0;
   }
-
   return len;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -472,7 +474,7 @@ newdata(void)
 
   if(len > 0 && s.state == WEBCLIENT_STATE_DATA &&
      s.httpflag != HTTPFLAG_MOVED) {
-    webclient_datahandler((char *)uip_appdata, len);
+    webclient_datahandler((char *)(uip_appdata + (uip_datalen() - len)), len);
   }
 }
 /*-----------------------------------------------------------------------------------*/
@@ -524,7 +526,7 @@ webclient_appcall(void)
   }
 
   if(uip_closed()) {
-sendString("webclinet: connection closed\r\n");
+sendString("webclinet: in the app call connection closed\r\n");
 /*
     if(s.httpflag != HTTPFLAG_MOVED) {
       // Send NULL data to signal EOF.
