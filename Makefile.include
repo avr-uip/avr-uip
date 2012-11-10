@@ -2,6 +2,9 @@ UNAME := $(shell uname)
 
 #CFLAGS += -save-temps
 
+# turn on deprecated avr-lib prog mem types
+CFLAGS += -Wno-deprecated-declarations -D__PROG_TYPES_COMPAT__
+
 INCLUDE_FLAGS += -I.
 
 LINT_OPT +=  -weak
