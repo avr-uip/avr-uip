@@ -98,7 +98,7 @@ HTTPD_CGI_CALL(getsetvalue_set, "getset_p.shtml", getsetvalue_in);
 #include "cgi-code/tcp.c"
 HTTPD_CGI_CALL(tcp_connections, "tcp_connections", tcp_stats);
 #else
-#define ENABLE_CGI_TCP_CONNECTIONS
+#define ENABLE_CGI_TCP_CONNECTIONS_LIST
 #endif
 
 static const struct httpd_cgi_call *calls[] = { 
