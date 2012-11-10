@@ -1908,9 +1908,12 @@ void uip_send_P( PGM_VOID_P data, int len)
 {
   if(len > 0) {
     uip_slen = len;
-    if(data != uip_sappdata) {
-      memcpy_P(uip_sappdata, (data), uip_slen);
-    }
+
+    // note removed per http://code.google.com/p/avr-uip/issues/detail?id=24
+    // really the code was wrong because it was taken from uip_send where both
+    // pointers pointed to the same address space.  uip_send_P they point into
+    // prog mem and sram
+    memcpy_P(uip_sappdata, (data), uip_slen);
   }
 }
 /** @} */
