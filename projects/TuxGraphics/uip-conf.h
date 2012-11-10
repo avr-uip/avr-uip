@@ -103,6 +103,15 @@ typedef unsigned short uip_stats_t;
  */
 #define UIP_CONF_UDP_CONNS		0
 
+/**
+ *  Turn on IP packet re-assembly.
+ *  This will re-assemble ip packets that become fragmented
+ *    which when assembled will fit in your UIP BUFFER.
+ *
+ *  Note: This will double the amount of RAM used by the UIP BUFFER.
+ */
+#define UIP_REASSEMBLY 1
+
 //Include app configuration
 #include "apps-conf.h"
 

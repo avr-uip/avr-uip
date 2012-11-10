@@ -16,12 +16,15 @@
 #define ETHADDR4		0x05
 #define ETHADDR5		0x71
 //Mac adress definition for uip
+#if 0  // using net_conf so remove here
 #define UIP_ETHADDR0    ETHADDR0
 #define UIP_ETHADDR1    ETHADDR1
 #define UIP_ETHADDR2    ETHADDR2
 #define UIP_ETHADDR3    ETHADDR3
 #define UIP_ETHADDR4    ETHADDR4
 #define UIP_ETHADDR5    ETHADDR5
+#endif
+
 
 // ENC28J60 SPI port
 #define ENC28J60_SPI_PORT		PORTB
