@@ -7,6 +7,9 @@ AVR-uIP project notes:
     apt-get install ... please add note
 
 
+This project is based on:
+-------------------------
+
 uIP is a very small implementation of the TCP/IP stack that is written
 by Adam Dunkels <adam@sics.se>. More information can be obtained 
 at the uIP homepage at http://www.sics.se/~adam/uip/.
