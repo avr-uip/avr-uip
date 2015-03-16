@@ -8,11 +8,15 @@ At the moment this area is configured to compile with gcc-4.9
 To get this working on a Yosemite systems do the following.
 
 Find and install the GNU gcc tool chain.
+
 For OSX the simplest way is to use brew
   see: http://brew.sh/
 
   Then run the normal - brew update, brew upgrade
   Then install the GNU gcc version 4.9
-     brew install gcc49
+    brew install gcc49
+
+  You will also need a TUNTAP interface which isn't standard on OSX (it is on Linux as I recall)
+    http://tuntaposx.sourceforge.net/index.xhtml
 
 You should be able to compile this area at this point
