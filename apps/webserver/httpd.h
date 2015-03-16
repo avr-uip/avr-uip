@@ -64,7 +64,6 @@ void httpd_log_file(u16_t *requester, char *file);
 	struct httpd_state httpd_state_list[UIP_CONF_MAX_CONNECTIONS];
 #else
 	#define WEBSERVER_APP_CALL_MAP
-	typedef struct httpd_state uip_tcp_appstate_t;
 #endif
 
 #endif /* __HTTPD_H__ */

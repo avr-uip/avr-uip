@@ -1,5 +1,4 @@
-
-/**
+/*
  * \addtogroup uip
  * @{
  */
@@ -1073,7 +1072,7 @@ struct uip_udp_conn *uip_udp_new(uip_ipaddr_t *ripaddr, u16_t rport);
 #      define HTONS(n) (u16_t)((((u16_t) (n)) << 8) | (((u16_t) (n)) >> 8))
 #   endif /* UIP_BYTE_ORDER == UIP_BIG_ENDIAN */
 #else
-#error "HTONS already defined!"
+#warning "HTONS already defined!"
 #endif /* HTONS */
 
 /**

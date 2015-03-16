@@ -155,8 +155,10 @@
  */
 
 #ifndef UIP_REASSEMBLY
-#warning "\nUIP_REASSEMBLY should be defined as 1 (ON) or 0 (OFF) in your project area"
-#define UIP_REASSEMBLY 0
+  #ifndef UNIX_BUILD
+    #warning "\nUIP_REASSEMBLY should be defined as 1 (ON) or 0 (OFF) in your project area"
+  #endif
+  #define UIP_REASSEMBLY 0
 #endif
 
 /**

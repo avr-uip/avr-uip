@@ -39,8 +39,8 @@
 
 struct httpd_fsdata_file {
   const struct httpd_fsdata_file *next;
-  const char *name;
-  const char *data;
+  const unsigned char *name;
+  const unsigned char *data;
   const int len;
 #ifdef HTTPD_FS_STATISTICS
 #if HTTPD_FS_STATISTICS == 1
