@@ -1,3 +1,12 @@
+
+AVR-uIP project notes:
+  OSX tools install
+    see: http://nothingtodisplay.org/avr-toolchain-with-homebrew-mac-os-x
+    which makes use of https://github.com/WeAreLeka/homebrew-avr
+  Ubuntu
+    apt-get install ... please add note
+
+
 uIP is a very small implementation of the TCP/IP stack that is written
 by Adam Dunkels <adam@sics.se>. More information can be obtained 
 at the uIP homepage at http://www.sics.se/~adam/uip/.
