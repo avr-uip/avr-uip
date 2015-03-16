@@ -1,6 +1,6 @@
 
 
-This is area allows you to compile a UIP project on a unix system.
+This area allows you to compile a UIP project on a unix system.
 This includes OSX.
 
 At the moment this area is configured to compile with gcc-4.9

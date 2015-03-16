@@ -32,16 +32,15 @@
 
 all: uip
 
-#CC     ?= gcc
 CC     ?= gcc-4.9
 AR     = ar
 APPS   = webserver
 CFLAGS = -Wall -g -I../uip -I. -fpack-struct -Os
 CFLAGS += -DUNIX_BUILD -fno-strict-aliasing
 CFLAGS += -I./avr-api -I../libs/avrlib-avrlib-conf
--include ../uip/Makefile.unix
+include ../uip/Makefile.unix
 
 uip: $(addprefix $(OBJECTDIR)/, main.o tapdev.o clock-arch.o) apps.a uip.a
 
 clean:
-	rm -fr *.o *~ *core uip $(OBJECTDIR) *.a
+	rm -fr *.o *~ *core uip uip.dSYM $(OBJECTDIR) *.a
