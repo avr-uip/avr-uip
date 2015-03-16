@@ -44,8 +44,8 @@
     #if defined(HTTPD_FRAGMENTS)
 	  #warning "If you use a web browser with this httpd you should have UIP_REASSEMBLY=1"
     #else
-      #error "For most modern web browsers you need to have UIP_REASSEMBLY=1 in order to decode most TCP packets as they become fragmented.  If you will not be accessing this server with a full web browser then define HTTPD_FRAGMENTS"
-	#endif
+      #warning "For most modern web browsers you need to have UIP_REASSEMBLY=1 in order to decode most TCP packets as they become fragmented.  If you will not be accessing this server with a full web browser then define HTTPD_FRAGMENTS"
+    #endif
   #endif
 #endif
 

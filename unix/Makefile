@@ -34,10 +34,18 @@ all: uip
 
 CC     ?= gcc-4.9
 AR     = ar
-APPS   = webserver
 CFLAGS = -Wall -g -I../uip -I. -fpack-struct -Os
 CFLAGS += -DUNIX_BUILD -fno-strict-aliasing
 CFLAGS += -I./avr-api -I../libs/avrlib-avrlib-conf
+
+# mem webserver
+#APPS   = webserver
+
+# progmem webserver (really it is all in mem on unix)
+APPS   = webserver.PROGMEM
+LIBS   = websrv_helper_functions webstrings_common.PROGMEM
+CFLAGS += -I../libs/webstrings_common.PROGMEM/ -I../libs/websrv_helper_functions/
+
 include ../uip/Makefile.unix
 
 uip: $(addprefix $(OBJECTDIR)/, main.o tapdev.o clock-arch.o) apps.a uip.a

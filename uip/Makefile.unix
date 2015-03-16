@@ -2,9 +2,16 @@
 
 ifdef APPS
   APPDIRS = $(foreach APP, $(APPS), ../apps/$(APP))
-  -include $(foreach APP, $(APPS), ../apps/$(APP)/Makefile.$(APP))
+  include $(foreach APP, $(APPS), ../apps/$(APP)/Makefile.$(APP))
   CFLAGS += $(addprefix -I../apps/,$(APPS))
 endif
+
+ifdef LIBS
+  LIBDIRS = $(foreach LIB, $(LIBS), ../libs/$(LIB))
+  include $(foreach LIB, $(LIBS), ../libs/$(LIB)/Makefile.$(LIB))
+  CFLAGS += $(addprefix -I../libs/,$(LIBS))
+endif
+
 
 ifndef CCDEP
   CCDEP = $(CC)
@@ -21,7 +28,7 @@ ifeq (${wildcard $(OBJECTDIR)},)
 endif
 
 
-vpath %.c . ../uip ../lib $(APPDIRS)
+vpath %.c . ../uip ../lib $(LIBDIRS)  $(APPDIRS)
 
 $(OBJECTDIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -43,5 +50,5 @@ endif
 uip.a: ${addprefix $(OBJECTDIR)/, $(UIP_SOURCES:.c=.o)}
 	$(AR) rc $@ $^
 
-apps.a: ${addprefix $(OBJECTDIR)/, $(APP_SOURCES:.c=.o)}
+apps.a: ${addprefix $(OBJECTDIR)/, $(APP_SOURCES:.c=.o) $(LIB_SOURCES:.c=.o)}
 	$(AR) rc $@ $^
